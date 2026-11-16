@@ -1,1 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#123b70">
 
+  <title>SMART SCHOOL MANAGER</title>
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.webmanifest">
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">SSM</div>
+    <div>
+      <h2>SMART SCHOOL MANAGER</h2>
+      <small>School Management Made Simple</small>
+    </div>
+  </div>
+
+  <button class="menu-btn" onclick="toggleMenu()">☰</button>
+</header>
+
+<nav id="navigation">
+  <a href="#home">Home</a>
+  <a href="#features">Features</a>
+  <a href="#register">Register School</a>
+  <a href="#login">Login</a>
+</nav>
+
+<main>
+
+<section class="hero" id="home">
+  <div class="hero-content">
+    <span class="badge">THE FUTURE OF SCHOOL MANAGEMENT</span>
+
+    <h1>Manage Your School<br>
+      <span>Smarter and Better.</span>
+    </h1>
+
+    <p>
+      A modern school management and academic report generation
+      platform designed to simplify administration, improve
+      academic performance and produce professional report cards.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="#register" class="btn primary">Register Your School</a>
+      <a href="#login" class="btn secondary">School Login</a>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+
+  <div class="section-heading">
+    <span>OUR PLATFORM</span>
+    <h2>Everything Your School Needs</h2>
+    <p>One platform. Multiple solutions.</p>
+  </div>
+
+  <div class="feature-grid">
+
+    <div class="feature-card">
+      <div class="icon">🏫</div>
+      <h3>School Administration</h3>
+      <p>Manage school information, staff, classes and academic sessions.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="icon">👨‍🎓</div>
+      <h3>Student Management</h3>
+      <p>Register students and maintain organised academic records.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="icon">📊</div>
+      <h3>Academic Assessment</h3>
+      <p>Record continuous assessment, examinations and student performance.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="icon">📄</div>
+      <h3>Professional Report Cards</h3>
+      <p>Generate attractive, printable academic report cards.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="icon">📈</div>
+      <h3>Academic Analytics</h3>
+      <p>Monitor student progress and analyse academic performance.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="icon">🔐</div>
+      <h3>Secure Access</h3>
+      <p>Separate access for school administrators and teachers.</p>
+    </div>
+
+  </div>
+</section>
+
+<section class="register-section" id="register">
+  <div class="section-heading">
+    <span>JOIN OUR PLATFORM</span>
+    <h2>Register Your School</h2>
+    <p>Submit your school registration for platform approval.</p>
+  </div>
+
+  <div class="form-card">
+    <form id="registrationForm">
+
+      <label>School Name</label>
+      <input type="text" id="schoolName" placeholder="Enter school name" required>
+
+      <label>School Email</label>
+      <input type="email" id="schoolEmail" placeholder="Enter school email" required>
+
+      <label>Phone Number</label>
+      <input type="tel" id="schoolPhone" placeholder="Enter phone number" required>
+
+      <label>School Address</label>
+      <textarea id="schoolAddress" placeholder="Enter school address" required></textarea>
+
+      <label>School Type</label>
+      <select id="schoolType" required>
+        <option value="">Select school type</option>
+        <option>Nursery</option>
+        <option>Primary</option>
+        <option>Secondary</option>
+        <option>Combined School</option>
+        <option>Other</option>
+      </select>
+
+      <button type="submit" class="btn primary full">
+        Submit Registration
+      </button>
+
+      <p id="registrationMessage"></p>
+    </form>
+  </div>
+</section>
+
+<section class="login-section" id="login">
+  <div class="section-heading">
+    <span>WELCOME BACK</span>
+    <h2>School Login</h2>
+    <p>Access your school management dashboard.</p>
+  </div>
+
+  <div class="form-card">
+    <form id="loginForm">
+
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="Enter email address" required>
+
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password" required>
+
+      <button type="submit" class="btn primary full">
+        Sign In
+      </button>
+
+      <p id="loginMessage"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <h3>SMART SCHOOL MANAGER</h3>
+  <p>School Management Made Simple. Academic Excellence Made Visible.</p>
+  <small>© 2026 SMART SCHOOL MANAGER. All Rights Reserved.</small>
+</footer>
+
+<script src="app.js"></script>
+
+</body>
+                                                     </html>
