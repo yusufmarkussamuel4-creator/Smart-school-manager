@@ -1,1 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform Owner | Smart School Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f2f5fa;color:#26364a}
+header{background:#123b70;color:white;padding:20px}
+header h2{margin:0}
+.container{max-width:1100px;margin:auto;padding:20px}
+.card{background:white;padding:22px;border-radius:10px;box-shadow:0 3px 15px #0000000d;margin-bottom:20px}
+input{width:100%;padding:13px;margin:8px 0 15px;border:1px solid #ddd;border-radius:6px}
+button{padding:11px 16px;border:0;border-radius:6px;background:#1769aa;color:white;cursor:pointer}
+button:disabled{opacity:.6}
+.logout{background:#b52b36;float:right}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.stat{background:white;padding:22px;border-radius:10px;border-left:4px solid #1769aa}
+.stat h3{font-size:28px;margin:8px 0;color:#123b70}
+.stat p{color:#718096;margin:0}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #eee;font-size:13px}
+th{background:#edf3fa}
+.table-wrap{overflow-x:auto}
+.approve{background:#16834a;margin:3px}
+.reject{background:#b52b36;margin:3px}
+#dashboard{display:none}
+#message{color:#b52b36;font-size:13px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:400px){.stats{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>SMART SCHOOL MANAGER</h2>
+<p>Platform Owner Control Centre</p>
+</header>
+
+<main class="container">
+
+<section id="login" class="card">
+<h2>Platform Owner Login</h2>
+<p>Sign in with your registered owner account.</p>
+
+<form id="loginForm">
+<label>Email Address</label>
+<input type="email" id="email" required>
+
+<label>Password</label>
+<input type="password" id="password" required>
+
+<button type="submit">Sign In</button>
+<p id="message"></p>
+</form>
+</section>
+
+<section id="dashboard">
+
+<div class="card">
+<button class="logout" id="logout">Sign Out</button>
+<h2>Dashboard Overview</h2>
+<p>Welcome to your platform control centre.</p>
+</div>
+
+<div class="stats">
+
+<div class="stat">
+<p>Total Schools</p>
+<h3 id="totalSchools">0</h3>
+</div>
+
+<div class="stat">
+<p>Approved Schools</p>
+<h3 id="approvedSchools">0</h3>
+</div>
+
+<div class="stat">
+<p>Pending Applications</p>
+<h3 id="pendingSchools">0</h3>
+</div>
+
+<div class="stat">
+<p>School Staff Accounts</p>
+<h3 id="totalMembers">0</h3>
+</div>
+
+</div>
+
+<div class="card" style="margin-top:22px">
+<h2>Pending School Applications</h2>
+<p>Review and approve schools requesting access.</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>School</th>
+<th>Email</th>
+<th>Phone</th>
+<th>Type</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="schoolList">
+<tr><td colspan="5">Loading...</td></tr>
+</tbody>
+</table>
+</div>
+<p id="dashboardMessage"></p>
+</div>
+
+</section>
+</main>
+
+<script>
+const db = window.supabase.createClient(
+window.SUPABASE_CONFIG.URL,
+window.SUPABASE_CONFIG.KEY
+);
+
+const loginSection = document.getElementById("login");
+const dashboard = document.getElementById("dashboard");
+const message = document.getElementById("message");
+
+async function showDashboard(user){
+
+const {data:profile,error} = await db
+.from("profiles")
+.select("is_platform_owner")
+.eq("id",user.id)
+.single();
+
+if(error || !profile || profile.is_platform_owner !== true){
+await db.auth.signOut();
+throw new Error("This account does not have Platform Owner privileges.");
+}
+
+loginSection.style.display="none";
+dashboard.style.display="block";
+
+await loadDashboard();
+}
+
+async function loadDashboard(){
+
+const [all,approved,pending,members] = await Promise.all([
+
+db.from("schools").select("id",{count:"exact",head:true}),
+
+db.from("schools").select("id",{count:"exact",head:true})
+.eq("approval_status","approved"),
+
+db.from("schools").select("id",{count:"exact",head:true})
+.eq("approval_status","pending"),
+
+db.from("school_memberships").select("id",{count:"exact",head:true})
+
+]);
+
+const errors = [all,approved,pending,members].filter(x=>x.error);
+
+if(errors.length){
+document.getElementById("dashboardMessage").textContent =
+"Could not load statistics: " + errors[0].error.message;
+return;
+}
+
+document.getElementById("totalSchools").textContent=all.count ?? 0;
+document.getElementById("approvedSchools").textContent=approved.count ?? 0;
+document.getElementById("pendingSchools").textContent=pending.count ?? 0;
+document.getElementById("totalMembers").textContent=members.count ?? 0;
+
+await loadPendingSchools();
+}
+
+async function loadPendingSchools(){
+
+const list=document.getElementById("schoolList");
+list.replaceChildren();
+
+const {data,error}=await db
+.from("schools")
+.select("id,school_name,school_email,phone,school_type")
+.eq("approval_status","pending")
+.order("created_at",{ascending:false})
+.limit(50);
+
+if(error){
+list.textContent="Unable to load applications: "+error.message;
+return;
+}
+
+if(!data || data.length===0){
+const row=document.createElement("tr");
+const cell=document.createElement("td");
+cell.colSpan=5;
+cell.textContent="No pending applications.";
+row.appendChild(cell);
+list.appendChild(row);
+return;
+}
+
+data.forEach(school=>{
+
+const row=document.createElement("tr");
+
+[school.school_name,school.school_email,
+school.phone,school.school_type].forEach(value=>{
+const cell=document.createElement("td");
+cell.textContent=value || "-";
+row.appendChild(cell);
+});
+
+const actionCell=document.createElement("td");
+
+const approve=document.createElement("button");
+approve.textContent="Approve";
+approve.className="approve";
+approve.onclick=()=>updateSchool(school.id,"approved");
+
+const reject=document.createElement("button");
+reject.textContent="Reject";
+reject.className="reject";
+reject.onclick=()=>updateSchool(school.id,"rejected");
+
+actionCell.append(approve,reject);
+row.appendChild(actionCell);
+list.appendChild(row);
+
+});
+}
+
+async function updateSchool(id,status){
+
+const confirmation=confirm(
+"Are you sure you want to "+status+" this school?"
+);
+
+if(!confirmation)return;
+
+const {error}=await db
+.from("schools")
+.update({approval_status:status})
+.eq("id",id);
+
+if(error){
+alert("Operation failed: "+error.message);
+return;
+}
+
+alert("School application "+status+" successfully.");
+await loadDashboard();
+}
+
+document.getElementById("loginForm")
+.addEventListener("submit",async function(event){
+
+event.preventDefault();
+message.textContent="Signing in...";
+
+const {data,error}=await db.auth.signInWithPassword({
+email:document.getElementById("email").value.trim(),
+password:document.getElementById("password").value
+});
+
+if(error){
+message.textContent=error.message;
+return;
+}
+
+try{
+await showDashboard(data.user);
+}catch(err){
+message.textContent=err.message;
+}
+
+});
+
+document.getElementById("logout").onclick=async()=>{
+await db.auth.signOut();
+dashboard.style.display="none";
+loginSection.style.display="block";
+};
+
+(async()=>{
+const {data}=await db.auth.getSession();
+if(data.session){
+try{
+await showDashboard(data.session.user);
+}catch(err){
+message.textContent=err.message;
+}
+}
+})();
+</script>
+
+</body>
+  </html>
