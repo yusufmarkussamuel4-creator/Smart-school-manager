@@ -160,18 +160,37 @@ if (registrationForm) {
             if (error) throw error;
 
             if (data.session && data.user) {
+async function submitSchoolRegistration(user) {
 
-                await submitSchoolRegistration(data.user);
+    const schoolData = JSON.parse(
+        sessionStorage.getItem("pendingSchoolRegistration") || "null"
+    );
 
-                showMessage(
-                    message,
-                    "Registration successful! Your school application is awaiting platform owner approval.",
-                    "green"
-                );
+    if (!schoolData) {
+        throw new Error("School registration information was not found.");
+    }
 
-                registrationForm.reset();
+    const { error } = await db
+        .from("schools")
+        .insert({
+            school_name: schoolData.school_name,
+            school_email: schoolData.school_email,
+            phone: schoolData.phone,
+            address: schoolData.address,
+            school_type: schoolData.school_type,
+            created_by: user.id,
+            approval_status: "pending"
+        });
 
-            } else {
+    if (error) {
+        console.error(error);
+        throw error;
+    }
+
+    sessionStorage.removeItem("pendingSchoolRegistration");
+
+    return true;
+}  else {
 
                 showMessage(
                     message,
