@@ -299,10 +299,15 @@ async function verifyOwner(user) {
         .eq("id", user.id)
         .single();
 
-    if (error || !data || data.is_platform_owner !== true) {
-        await db.auth.signOut();
-        showMessage("Access denied. Platform owner account required.");
-        return false;
+    if (error) {
+    showMessage("PROFILE ERROR: " + error.message);
+    return false;
+}
+
+if (!data || data.is_platform_owner !== true) {
+    showMessage("ACCESS DENIED: " + JSON.stringify(data));
+    return false;
+}
     }
 
     loginBox.style.display = "none";
