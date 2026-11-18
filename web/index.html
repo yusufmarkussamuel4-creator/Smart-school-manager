@@ -9,6 +9,8 @@
 
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.webmanifest">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -105,6 +107,7 @@
 </section>
 
 <section class="register-section" id="register">
+
   <div class="section-heading">
     <span>JOIN OUR PLATFORM</span>
     <h2>Register Your School</h2>
@@ -112,40 +115,70 @@
   </div>
 
   <div class="form-card">
+
     <form id="registrationForm">
 
+      <h3>School Information</h3>
+
       <label>School Name</label>
-      <input type="text" id="schoolName" placeholder="Enter school name" required>
+      <input type="text" id="schoolName"
+        placeholder="Enter school name" required>
 
       <label>School Email</label>
-      <input type="email" id="schoolEmail" placeholder="Enter school email" required>
+      <input type="email" id="schoolEmail"
+        placeholder="Enter school email" required>
 
       <label>Phone Number</label>
-      <input type="tel" id="schoolPhone" placeholder="Enter phone number" required>
+      <input type="tel" id="schoolPhone"
+        placeholder="Enter phone number" required>
 
       <label>School Address</label>
-      <textarea id="schoolAddress" placeholder="Enter school address" required></textarea>
+      <textarea id="schoolAddress"
+        placeholder="Enter school address" required></textarea>
 
       <label>School Type</label>
       <select id="schoolType" required>
         <option value="">Select school type</option>
-        <option>Nursery</option>
-        <option>Primary</option>
-        <option>Secondary</option>
-        <option>Combined School</option>
-        <option>Other</option>
+        <option value="Nursery">Nursery</option>
+        <option value="Primary">Primary</option>
+        <option value="Secondary">Secondary</option>
+        <option value="Combined School">Combined School</option>
+        <option value="Other">Other</option>
       </select>
 
+      <hr>
+
+      <h3>Administrator Account</h3>
+
+      <label>Administrator's Full Name</label>
+      <input type="text" id="adminName"
+        placeholder="Enter administrator's full name" required>
+
+      <label>Administrator's Email</label>
+      <input type="email" id="adminEmail"
+        placeholder="Enter administrator's email" required>
+
+      <label>Create Password</label>
+      <input type="password" id="adminPassword"
+        placeholder="Minimum 8 characters" minlength="8" required>
+
+      <label>Confirm Password</label>
+      <input type="password" id="confirmPassword"
+        placeholder="Confirm your password" minlength="8" required>
+
       <button type="submit" class="btn primary full">
-        Submit Registration
+        Submit School Registration
       </button>
 
       <p id="registrationMessage"></p>
+
     </form>
+
   </div>
 </section>
 
 <section class="login-section" id="login">
+
   <div class="section-heading">
     <span>WELCOME BACK</span>
     <h2>School Login</h2>
@@ -153,20 +186,25 @@
   </div>
 
   <div class="form-card">
+
     <form id="loginForm">
 
       <label>Email Address</label>
-      <input type="email" id="loginEmail" placeholder="Enter email address" required>
+      <input type="email" id="loginEmail"
+        placeholder="Enter administrator email" required>
 
       <label>Password</label>
-      <input type="password" id="loginPassword" placeholder="Enter password" required>
+      <input type="password" id="loginPassword"
+        placeholder="Enter password" required>
 
       <button type="submit" class="btn primary full">
         Sign In
       </button>
 
       <p id="loginMessage"></p>
+
     </form>
+
   </div>
 </section>
 
@@ -182,4 +220,4 @@
 <script src="app.js"></script>
 
 </body>
-  </html>
+</html>
