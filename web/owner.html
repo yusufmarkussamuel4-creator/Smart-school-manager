@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart School Manager - Owner Dashboard</title>
+
+<title>SMART SCHOOL MANAGER - Owner Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
@@ -16,7 +19,7 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #f2f5fa;
+    background: #f1f5f9;
     color: #263445;
 }
 
@@ -46,14 +49,15 @@ header h2 {
 
 input {
     width: 100%;
-    padding: 13px;
-    margin: 9px 0;
+    padding: 14px;
+    margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 6px;
+    font-size: 16px;
 }
 
 button {
-    padding: 11px 17px;
+    padding: 12px 18px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -64,24 +68,23 @@ button {
 
 button:disabled {
     opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.logout {
-    background: #d93636;
+.logout,
+.reject {
+    background: #c93636;
 }
 
 .approve {
     background: #168447;
 }
 
-.reject {
-    background: #c93636;
-}
-
 .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 15px;
+    margin-bottom: 20px;
 }
 
 .stat {
@@ -103,6 +106,10 @@ button:disabled {
     margin: 8px 0;
 }
 
+.table-wrap {
+    overflow-x: auto;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -119,10 +126,6 @@ th {
     background: #edf3fa;
 }
 
-.table-wrap {
-    overflow-x: auto;
-}
-
 #dashboard {
     display: none;
 }
@@ -130,6 +133,12 @@ th {
 #message {
     color: #c93636;
     margin-top: 12px;
+    overflow-wrap: anywhere;
+}
+
+#applicationMessage {
+    color: #1264b3;
+    overflow-wrap: anywhere;
 }
 
 footer {
@@ -137,7 +146,9 @@ footer {
     padding: 20px;
     color: #64748b;
 }
+
 </style>
+
 </head>
 
 <body>
@@ -149,10 +160,14 @@ footer {
 
 <div class="container">
 
+    <!-- OWNER LOGIN -->
+
     <div class="card" id="loginBox">
-        <h2>Owner Login</h2>
+
+        <h2>Platform Owner Login</h2>
 
         <form id="loginForm">
+
             <input
                 type="email"
                 id="email"
@@ -170,19 +185,38 @@ footer {
             <button type="submit" id="loginButton">
                 Login to Dashboard
             </button>
+
         </form>
 
-        <p id="message"></p>
+        <p id="message" role="status"></p>
+
     </div>
+
+
+    <!-- OWNER DASHBOARD -->
 
     <div id="dashboard">
 
         <div class="card">
+
             <h2>Welcome, Platform Owner</h2>
-            <p>Manage registered schools and platform activities.</p>
-            <button class="logout" id="logoutButton">Logout</button>
-            <button id="refreshButton">Refresh Dashboard</button>
+
+            <p>
+                Manage registered schools and platform activities.
+            </p>
+
+            <button id="refreshButton">
+                Refresh Dashboard
+            </button>
+
+            <button class="logout" id="logoutButton">
+                Logout
+            </button>
+
         </div>
+
+
+        <!-- STATISTICS -->
 
         <div class="stats">
 
@@ -208,13 +242,21 @@ footer {
 
         </div>
 
+
+        <!-- SCHOOL APPLICATIONS -->
+
         <div class="card">
+
             <h2>Pending School Applications</h2>
 
-            <p id="applicationMessage"></p>
+            <p id="applicationMessage">
+                Loading applications...
+            </p>
 
             <div class="table-wrap">
+
                 <table>
+
                     <thead>
                         <tr>
                             <th>School Name</th>
@@ -224,15 +266,18 @@ footer {
                         </tr>
                     </thead>
 
-                    <tbody id="schoolList">
-                    </tbody>
+                    <tbody id="schoolList"></tbody>
+
                 </table>
+
             </div>
+
         </div>
 
     </div>
 
 </div>
+
 
 <footer>
     SMART SCHOOL MANAGER &copy; 2026
@@ -240,11 +285,14 @@ footer {
     School Management Made Simple.
 </footer>
 
+
 <script>
-const db = window.supabase.createClient(
-    window.SUPABASE_CONFIG.URL,
-    window.SUPABASE_CONFIG.KEY
-);
+
+// ==================================
+// 1. SUPABASE CONFIGURATION
+// ==================================
+
+let db;
 
 const loginBox = document.getElementById("loginBox");
 const dashboard = document.getElementById("dashboard");
@@ -254,279 +302,532 @@ function showMessage(text) {
     message.textContent = text;
 }
 
+function showDashboardMessage(text) {
+    document.getElementById("applicationMessage").textContent = text;
+}
+
+try {
+
+    if (
+        !window.supabase ||
+        !window.SUPABASE_CONFIG ||
+        !window.SUPABASE_CONFIG.URL ||
+        !window.SUPABASE_CONFIG.KEY
+    ) {
+        throw new Error("Supabase configuration is missing.");
+    }
+
+    db = window.supabase.createClient(
+        window.SUPABASE_CONFIG.URL,
+        window.SUPABASE_CONFIG.KEY
+    );
+
+} catch (error) {
+
+    showMessage("CONFIGURATION ERROR: " + error.message);
+
+}
+
+
+// ==================================
+// 2. VERIFY PLATFORM OWNER
+// ==================================
+
 async function verifyOwner(user) {
 
     showMessage("Checking owner permissions...");
 
-    const { data, error } = await db
-        .from("profiles")
-        .select("id, email, is_platform_owner")
-        .eq("id", user.id)
-        .single();
+    try {
 
-    if (error) {
-        showMessage("PROFILE ERROR: " + error.message);
+        const { data, error } = await db
+            .from("profiles")
+            .select("id, email, is_platform_owner")
+            .eq("id", user.id)
+            .single();
+
+        if (error) {
+
+            showMessage(
+                "PROFILE ERROR: " + error.message
+            );
+
+            return false;
+        }
+
+        if (!data) {
+
+            showMessage(
+                "No matching owner profile found."
+            );
+
+            return false;
+        }
+
+        if (data.is_platform_owner !== true) {
+
+            showMessage(
+                "ACCESS DENIED: This account is not a platform owner."
+            );
+
+            return false;
+        }
+
+        // OWNER VERIFIED
+
+        loginBox.style.display = "none";
+        dashboard.style.display = "block";
+
+        showDashboardMessage(
+            "Owner authentication successful. Loading dashboard..."
+        );
+
+        await loadDashboard();
+
+        return true;
+
+    } catch (error) {
+
+        showMessage(
+            "VERIFICATION ERROR: " + error.message
+        );
+
         return false;
     }
 
-    if (!data) {
-        showMessage("No matching owner profile found.");
-        return false;
-    }
-
-    if (data.is_platform_owner !== true) {
-        showMessage("ACCESS DENIED: Not a platform owner.");
-        return false;
-    }
-
-    loginBox.style.display = "none";
-    dashboard.style.display = "block";
-
-    showMessage("Owner authentication successful.");
-
-    await loadDashboard();
-
-    return true;
 }
 
-    const { data, error } = await db
-        .from("profiles")
-        .select("is_platform_owner")
-        .eq("id", user.id)
-        .single();
 
-    if (error) {
-    showMessage("PROFILE ERROR: " + error.message);
-    return false;
-}
-
-if (!data || data.is_platform_owner !== true) {
-    showMessage("ACCESS DENIED: " + JSON.stringify(data));
-    return false;
-}
-    }
-
-    loginBox.style.display = "none";
-    dashboard.style.display = "block";
-
-    await loadDashboard();
-
-    return true;
-}
+// ==================================
+// 3. OWNER LOGIN
+// ==================================
 
 document.getElementById("loginForm")
 .addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const button = document.getElementById("loginButton");
+    if (!db) {
+        showMessage("Supabase is not configured.");
+        return;
+    }
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+    const button =
+        document.getElementById("loginButton");
 
     button.disabled = true;
     button.textContent = "Signing in...";
 
+    showMessage("Connecting to Supabase...");
+
     try {
-        showMessage("Connecting to Supabase...");
 
         const { data, error } = await db.auth.signInWithPassword({
+
             email: email,
             password: password
+
         });
 
         if (error) {
-            showMessage("LOGIN ERROR: " + error.message);
+
+            showMessage(
+                "LOGIN ERROR: " + error.message
+            );
+
             return;
         }
 
-        showMessage("Login successful. Checking owner account...");
+        if (!data.user) {
+
+            showMessage(
+                "Login failed: No authenticated user returned."
+            );
+
+            return;
+        }
+
+        showMessage(
+            "Login successful. Checking owner account..."
+        );
 
         await verifyOwner(data.user);
 
-    } catch (err) {
-        showMessage("SYSTEM ERROR: " + err.message);
+    } catch (error) {
+
+        showMessage(
+            "SYSTEM ERROR: " + error.message
+        );
 
     } finally {
+
         button.disabled = false;
         button.textContent = "Login to Dashboard";
+
     }
 
 });
 
+
+// ==================================
+// 4. LOAD DASHBOARD STATISTICS
+// ==================================
+
 async function loadDashboard() {
 
-    const status = document.getElementById("applicationMessage");
+    showDashboardMessage("Loading dashboard statistics...");
 
-    status.textContent = "Loading dashboard...";
+    try {
 
-    const [
-        total,
-        approved,
-        pending,
-        members
-    ] = await Promise.all([
+        const [
+            total,
+            approved,
+            pending,
+            members
 
-        db.from("schools")
-        .select("id", {count: "exact", head: true}),
+        ] = await Promise.all([
 
-        db.from("schools")
-        .select("id", {count: "exact", head: true})
-        .eq("approval_status", "approved"),
+            db.from("schools")
+            .select("id", {
+                count: "exact",
+                head: true
+            }),
 
-        db.from("schools")
-        .select("id", {count: "exact", head: true})
-        .eq("approval_status", "pending"),
+            db.from("schools")
+            .select("id", {
+                count: "exact",
+                head: true
+            })
+            .eq("approval_status", "approved"),
 
-        db.from("school_memberships")
-        .select("id", {count: "exact", head: true})
+            db.from("schools")
+            .select("id", {
+                count: "exact",
+                head: true
+            })
+            .eq("approval_status", "pending"),
 
-    ]);
+            db.from("school_memberships")
+            .select("id", {
+                count: "exact",
+                head: true
+            })
 
-    const errors = [total, approved, pending, members]
-        .filter(result => result.error);
+        ]);
 
-    if (errors.length) {
-        status.textContent =
-            "Dashboard data error: " + errors[0].error.message;
-        return;
+        const errors = [
+            total,
+            approved,
+            pending,
+            members
+        ].filter(result => result.error);
+
+        if (errors.length > 0) {
+
+            showDashboardMessage(
+                "DASHBOARD DATA ERROR: " +
+                errors[0].error.message
+            );
+
+            return;
+        }
+
+        document.getElementById("totalSchools").textContent =
+            total.count ?? 0;
+
+        document.getElementById("approvedSchools").textContent =
+            approved.count ?? 0;
+
+        document.getElementById("pendingSchools").textContent =
+            pending.count ?? 0;
+
+        document.getElementById("totalMembers").textContent =
+            members.count ?? 0;
+
+        await loadPendingSchools();
+
+    } catch (error) {
+
+        showDashboardMessage(
+            "DASHBOARD ERROR: " + error.message
+        );
+
     }
 
-    document.getElementById("totalSchools").textContent =
-        total.count ?? 0;
-
-    document.getElementById("approvedSchools").textContent =
-        approved.count ?? 0;
-
-    document.getElementById("pendingSchools").textContent =
-        pending.count ?? 0;
-
-    document.getElementById("totalMembers").textContent =
-        members.count ?? 0;
-
-    await loadPendingSchools();
 }
+
+
+// ==================================
+// 5. LOAD PENDING SCHOOL APPLICATIONS
+// ==================================
 
 async function loadPendingSchools() {
 
-    const list = document.getElementById("schoolList");
-    const status = document.getElementById("applicationMessage");
+    const list =
+        document.getElementById("schoolList");
 
     list.replaceChildren();
 
-    const { data, error } = await db
-        .from("schools")
-        .select("*")
-        .eq("approval_status", "pending");
+    showDashboardMessage(
+        "Loading pending school applications..."
+    );
 
-    if (error) {
-        status.textContent = error.message;
-        return;
-    }
+    try {
 
-    if (!data || data.length === 0) {
-        status.textContent = "No pending school applications.";
-        return;
-    }
+        const { data, error } = await db
+            .from("schools")
+            .select("*")
+            .eq("approval_status", "pending");
 
-    status.textContent = data.length + " pending application(s).";
+        if (error) {
 
-    data.forEach(school => {
+            showDashboardMessage(
+                "APPLICATION ERROR: " + error.message
+            );
 
-        const row = document.createElement("tr");
+            return;
+        }
 
-        const name = document.createElement("td");
-        name.textContent =
-            school.school_name || school.name || "Unnamed School";
+        if (!data || data.length === 0) {
 
-        const contact = document.createElement("td");
-        contact.textContent =
-            school.email || school.contact_email || "Not provided";
+            showDashboardMessage(
+                "No pending school applications."
+            );
 
-        const state = document.createElement("td");
-        state.textContent = school.approval_status;
+            return;
+        }
 
-        const action = document.createElement("td");
+        showDashboardMessage(
+            data.length + " pending application(s)."
+        );
 
-        const approveButton = document.createElement("button");
-        approveButton.textContent = "Approve";
-        approveButton.className = "approve";
+        data.forEach(school => {
 
-        approveButton.addEventListener("click", () => {
-            updateSchool(school.id, "approved");
+            const row = document.createElement("tr");
+
+            const name = document.createElement("td");
+
+            name.textContent =
+                school.school_name ||
+                school.name ||
+                "Unnamed School";
+
+            const contact = document.createElement("td");
+
+            contact.textContent =
+                school.email ||
+                school.contact_email ||
+                "Not provided";
+
+            const state = document.createElement("td");
+
+            state.textContent =
+                school.approval_status;
+
+            const action = document.createElement("td");
+
+            const approveButton =
+                document.createElement("button");
+
+            approveButton.textContent = "Approve";
+            approveButton.className = "approve";
+
+            approveButton.addEventListener("click", function() {
+
+                updateSchool(school.id, "approved");
+
+            });
+
+            const rejectButton =
+                document.createElement("button");
+
+            rejectButton.textContent = "Reject";
+            rejectButton.className = "reject";
+
+            rejectButton.addEventListener("click", function() {
+
+                updateSchool(school.id, "rejected");
+
+            });
+
+            action.append(
+                approveButton,
+                rejectButton
+            );
+
+            row.append(
+                name,
+                contact,
+                state,
+                action
+            );
+
+            list.appendChild(row);
+
         });
 
-        const rejectButton = document.createElement("button");
-        rejectButton.textContent = "Reject";
-        rejectButton.className = "reject";
+    } catch (error) {
 
-        rejectButton.addEventListener("click", () => {
-            updateSchool(school.id, "rejected");
-        });
+        showDashboardMessage(
+            "APPLICATION ERROR: " + error.message
+        );
 
-        action.append(approveButton, rejectButton);
-        row.append(name, contact, state, action);
-        list.appendChild(row);
+    }
 
-    });
 }
+
+
+// ==================================
+// 6. APPROVE OR REJECT SCHOOL
+// ==================================
 
 async function updateSchool(id, newStatus) {
 
     const confirmed = confirm(
-        "Are you sure you want to " + newStatus + " this school?"
+        "Are you sure you want to " +
+        newStatus +
+        " this school?"
     );
 
     if (!confirmed) return;
 
-    const { data, error } = await db
-        .from("schools")
-        .update({approval_status: newStatus})
-        .eq("id", id)
-        .select("id");
+    try {
 
-    if (error) {
-        alert("Update failed: " + error.message);
-        return;
+        const { data, error } = await db
+            .from("schools")
+            .update({
+                approval_status: newStatus
+            })
+            .eq("id", id)
+            .select("id");
+
+        if (error) {
+
+            alert(
+                "Update failed: " + error.message
+            );
+
+            return;
+        }
+
+        if (!data || data.length === 0) {
+
+            alert(
+                "No school was updated. Check database permissions."
+            );
+
+            return;
+        }
+
+        alert(
+            "School application " +
+            newStatus +
+            " successfully."
+        );
+
+        await loadDashboard();
+
+    } catch (error) {
+
+        alert(
+            "SYSTEM ERROR: " + error.message
+        );
+
     }
 
-    if (!data || data.length === 0) {
-        alert("No school was updated. Check database permissions.");
-        return;
-    }
-
-    alert("School application " + newStatus + " successfully.");
-
-    await loadDashboard();
 }
 
+
+// ==================================
+// 7. REFRESH DASHBOARD
+// ==================================
+
 document.getElementById("refreshButton")
-.addEventListener("click", loadDashboard);
+.addEventListener("click", async function() {
+
+    await loadDashboard();
+
+});
+
+
+// ==================================
+// 8. LOGOUT
+// ==================================
 
 document.getElementById("logoutButton")
 .addEventListener("click", async function() {
 
-    await db.auth.signOut();
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+
+        alert("Logout error: " + error.message);
+
+        return;
+    }
 
     dashboard.style.display = "none";
     loginBox.style.display = "block";
 
-    showMessage("You have logged out successfully.");
+    document.getElementById("password").value = "";
+
+    showMessage(
+        "You have logged out successfully."
+    );
 
 });
 
+
+// ==================================
+// 9. CHECK EXISTING LOGIN SESSION
+// ==================================
+
 async function checkExistingSession() {
 
-    const { data } = await db.auth.getSession();
+    if (!db) return;
 
-    if (data.session) {
-        await verifyOwner(data.session.user);
+    try {
+
+        const { data, error } = await db.auth.getSession();
+
+        if (error) {
+
+            showMessage(
+                "SESSION ERROR: " + error.message
+            );
+
+            return;
+        }
+
+        if (data.session) {
+
+            await verifyOwner(data.session.user);
+
+        }
+
+    } catch (error) {
+
+        showMessage(
+            "SESSION ERROR: " + error.message
+        );
+
     }
 
 }
+
+
+// ==================================
+// 10. START APPLICATION
+// ==================================
 
 checkExistingSession();
 
 </script>
 
 </body>
-  </html>
+</html>
