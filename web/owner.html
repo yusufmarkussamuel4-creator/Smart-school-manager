@@ -256,6 +256,43 @@ function showMessage(text) {
 
 async function verifyOwner(user) {
 
+    showMessage("Checking owner permissions...");
+
+    const { data, error } = await db
+        .from("profiles")
+        .select("id, email, is_platform_owner")
+        .eq("id", user.id)
+        .single();
+
+    if (error) {
+        showMessage(
+            "PROFILE ERROR: " + error.message
+        );
+        return false;
+    }
+
+    if (!data) {
+        showMessage("No matching owner profile found.");
+        return false;
+    }
+
+    if (data.is_platform_owner !== true) {
+        showMessage(
+            "ACCESS DENIED: Account is not a platform owner."
+        );
+        return false;
+    }
+
+    loginBox.style.display = "none";
+    dashboard.style.display = "block";
+
+    showMessage("Owner authentication successful.");
+
+    await loadDashboard();
+
+    return true;
+} {
+
     const { data, error } = await db
         .from("profiles")
         .select("is_platform_owner")
