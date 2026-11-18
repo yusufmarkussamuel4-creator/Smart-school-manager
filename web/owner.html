@@ -326,19 +326,30 @@ document.getElementById("loginForm")
     button.disabled = true;
     button.textContent = "Signing in...";
 
-    const { data, error } = await db.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
+    try {
+        showMessage("Connecting to Supabase...");
 
-    if (error) {
-        showMessage(error.message);
-    } else {
+        const { data, error } = await db.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            showMessage("LOGIN ERROR: " + error.message);
+            return;
+        }
+
+        showMessage("Login successful. Checking owner account...");
+
         await verifyOwner(data.user);
-    }
 
-    button.disabled = false;
-    button.textContent = "Login to Dashboard";
+    } catch (err) {
+        showMessage("SYSTEM ERROR: " + err.message);
+
+    } finally {
+        button.disabled = false;
+        button.textContent = "Login to Dashboard";
+    }
 
 });
 
