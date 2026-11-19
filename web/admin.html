@@ -1,1 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Administrator Dashboard | SMART SCHOOL MANAGER</title>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            margin: 0;
+            background: #f3f6fa;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background: #123c69;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 25px auto;
+            padding: 15px;
+        }
+
+        .school-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #00000010;
+            margin-bottom: 25px;
+        }
+
+        .school-card h2 {
+            margin-top: 0;
+            color: #123c69;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: #d9f5e5;
+            color: #087b3d;
+            font-weight: bold;
+        }
+
+        .modules {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .module {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .module h3 {
+            color: #123c69;
+        }
+
+        .module p {
+            color: #666;
+        }
+
+        button {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        #loadingMessage {
+            color: #555;
+        }
+
+        @media(max-width:600px) {
+            .container {
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h2>SMART SCHOOL MANAGER</h2>
+    <p>School Administrator Dashboard</p>
+</header>
+
+<div class="container">
+
+    <p id="loadingMessage">Loading your school information...</p>
+
+    <section class="school-card" id="schoolInformation" hidden>
+        <h2 id="schoolName">School Name</h2>
+
+        <p><strong>School Email:</strong>
+            <span id="schoolEmail"></span>
+        </p>
+
+        <p><strong>Phone:</strong>
+            <span id="schoolPhone"></span>
+        </p>
+
+        <p><strong>Address:</strong>
+            <span id="schoolAddress"></span>
+        </p>
+
+        <p><strong>School Type:</strong>
+            <span id="schoolType"></span>
+        </p>
+
+        <p><strong>Approval Status:</strong>
+            <span class="status" id="approvalStatus"></span>
+        </p>
+    </section>
+
+    <h2>School Management Modules</h2>
+
+    <div class="modules">
+
+        <div class="module">
+            <h3>Students</h3>
+            <p>Register and manage students.</p>
+        </div>
+
+        <div class="module">
+            <h3>Teachers</h3>
+            <p>Manage teaching staff.</p>
+        </div>
+
+        <div class="module">
+            <h3>Classes</h3>
+            <p>Manage classes and arms.</p>
+        </div>
+
+        <div class="module">
+            <h3>Subjects</h3>
+            <p>Manage school subjects.</p>
+        </div>
+
+        <div class="module">
+            <h3>Attendance</h3>
+            <p>Monitor student attendance.</p>
+        </div>
+
+        <div class="module">
+            <h3>Academic Results</h3>
+            <p>Manage examinations and results.</p>
+        </div>
+
+        <div class="module">
+            <h3>Report Cards</h3>
+            <p>Generate student reports.</p>
+        </div>
+
+        <div class="module">
+            <h3>School Settings</h3>
+            <p>Manage school information.</p>
+        </div>
+
+    </div>
+
+    <br>
+
+    <button onclick="logout()">Logout</button>
+
+</div>
+
+<script src="config.js"></script>
+
+<script>
+const db = window.supabase.createClient(
+    window.SUPABASE_CONFIG.URL,
+    window.SUPABASE_CONFIG.KEY
+);
+
+async function loadDashboard() {
+
+    const loading = document.getElementById("loadingMessage");
+
+    try {
+
+        const { data: authData, error: authError } =
+            await db.auth.getUser();
+
+        if (authError || !authData.user) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        const user = authData.user;
+
+        const { data: memberships, error: membershipError } =
+            await db
+                .from("school_memberships")
+                .select("school_id, role")
+                .eq("user_id", user.id)
+                .eq("role", "school_admin");
+
+        if (membershipError) throw membershipError;
+
+        if (!memberships || memberships.length === 0) {
+            throw new Error("No school administrator membership found.");
+        }
+
+        const schoolId = memberships[0].school_id;
+
+        const { data: school, error: schoolError } =
+            await db
+                .from("schools")
+                .select("*")
+                .eq("id", schoolId)
+                .single();
+
+        if (schoolError) throw schoolError;
+
+        if (school.approval_status !== "approved") {
+            throw new Error("Your school is awaiting platform approval.");
+        }
+
+        document.getElementById("schoolName").textContent =
+            school.school_name;
+
+        document.getElementById("schoolEmail").textContent =
+            school.school_email;
+
+        document.getElementById("schoolPhone").textContent =
+            school.phone || "Not provided";
+
+        document.getElementById("schoolAddress").textContent =
+            school.address || "Not provided";
+
+        document.getElementById("schoolType").textContent =
+            school.school_type;
+
+        document.getElementById("approvalStatus").textContent =
+            school.approval_status.toUpperCase();
+
+        document.getElementById("schoolInformation").hidden = false;
+
+        loading.style.display = "none";
+
+    } catch (error) {
+
+        console.error(error);
+
+        loading.textContent = "Dashboard error: " + error.message;
+
+    }
+}
+
+async function logout() {
+    await db.auth.signOut();
+    window.location.href = "index.html";
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>
