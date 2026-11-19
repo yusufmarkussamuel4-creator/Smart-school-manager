@@ -179,7 +179,6 @@ if (approvedSchool) {
     return;
 }
 
-showMessage(
     message,
     "Your school is awaiting platform approval.",
     "#1769aa"
