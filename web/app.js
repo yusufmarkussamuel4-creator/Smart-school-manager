@@ -149,10 +149,41 @@ if (registrationForm) {
                 await submitSchoolRegistration(data.user);
 
                 showMessage(
-                    message,
-                    "Registration successful! Your school is awaiting approval.",
-                    "green"
-                );
+                  const { data: memberships, error: membershipError } = await db
+    .from("school_memberships")
+    .select("school_id, role")
+    .eq("user_id", data.user.id)
+    .eq("role", "school_admin");
+
+if (membershipError) throw membershipError;
+
+if (!memberships || memberships.length === 0) {
+    throw new Error("No school administrator membership found.");
+}
+
+const schoolIds = memberships.map(item => item.school_id);
+
+const { data: schools, error: schoolError } = await db
+    .from("schools")
+    .select("id, approval_status")
+    .in("id", schoolIds);
+
+if (schoolError) throw schoolError;
+
+const approvedSchool = schools.find(
+    school => school.approval_status === "approved"
+);
+
+if (approvedSchool) {
+    window.location.href = "admin.html";
+    return;
+}
+
+showMessage(
+    message,
+    "Your school is awaiting platform approval.",
+    "#1769aa"
+);  
 
                 registrationForm.reset();
 
