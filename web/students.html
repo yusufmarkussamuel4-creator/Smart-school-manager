@@ -1,1 +1,189 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management | Smart School Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        .student-container {
+            max-width: 1100px;
+            margin: 25px auto;
+            padding: 15px;
+        }
+        .student-card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.08);
+        }
+        .student-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            gap: 15px;
+        }
+        .student-form input,
+        .student-form select,
+        .student-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            box-sizing: border-box;
+        }
+        .student-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .student-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 7px;
+            background: #1769aa;
+            color: white;
+            cursor: pointer;
+        }
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+        .student-table th,
+        .student-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        #studentMessage {
+            margin-top: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body><div class="student-container"><h2>Student Management</h2>
+<p>Register, manage and view student records.</p>
 
+<div class="student-card">
+    <h3>Register New Student</h3>
+
+    <form id="studentForm">
+        <div class="student-form">
+
+            <div>
+                <label>Admission Number</label>
+                <input type="text" id="admissionNumber" required>
+            </div>
+
+            <div>
+                <label>First Name</label>
+                <input type="text" id="firstName" required>
+            </div>
+
+            <div>
+                <label>Middle Name</label>
+                <input type="text" id="middleName">
+            </div>
+
+            <div>
+                <label>Last Name</label>
+                <input type="text" id="lastName" required>
+            </div>
+
+            <div>
+                <label>Gender</label>
+                <select id="gender">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Date of Birth</label>
+                <input type="date" id="dateOfBirth">
+            </div>
+
+            <div>
+                <label>Parent/Guardian Name</label>
+                <input type="text" id="guardianName">
+            </div>
+
+            <div>
+                <label>Parent/Guardian Phone</label>
+                <input type="tel" id="guardianPhone">
+            </div>
+
+            <div>
+                <label>Class</label>
+                <select id="classId" required>
+                    <option value="">Loading classes...</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Academic Session</label>
+                <input type="text" id="academicSession" placeholder="2026/2027" required>
+            </div>
+
+            <div>
+                <label>Term</label>
+                <select id="term" required>
+                    <option value="">Select Term</option>
+                    <option value="First Term">First Term</option>
+                    <option value="Second Term">Second Term</option>
+                    <option value="Third Term">Third Term</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Home Address</label>
+                <textarea id="homeAddress"></textarea>
+            </div>
+
+        </div>
+
+        <br>
+        <button type="submit" class="student-btn">Register Student</button>
+        <p id="studentMessage"></p>
+    </form>
+</div>
+
+<div class="student-card">
+    <h3>Registered Students</h3>
+
+    <input
+        type="search"
+        id="studentSearch"
+        placeholder="Search by name or admission number..."
+        style="width:100%;padding:12px;margin-bottom:15px;box-sizing:border-box;"
+    >
+
+    <div class="table-wrapper">
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>Admission No.</th>
+                    <th>Student Name</th>
+                    <th>Gender</th>
+                    <th>Class</th>
+                </tr>
+            </thead>
+            <tbody id="studentList">
+                <tr><td colspan="4">Loading students...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<button class="student-btn" onclick="window.location.href='admin.html'">
+    Back to Dashboard
+</button>
+
+</div><script src="students.js"></script></body>
+</html>
