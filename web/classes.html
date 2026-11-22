@@ -4,14 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Class Management | Smart School Manager</title>
-
 <link rel="stylesheet" href="styles.css">
 
 <style>
 .class-container {
     max-width: 1000px;
-    margin: 25px auto;
-    padding: 20px;
+    margin: 20px auto;
+    padding: 15px;
 }
 
 .class-card {
@@ -22,26 +21,21 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.class-card h2 {
-    margin-top: 0;
-}
-
 .class-form {
     display: grid;
     gap: 12px;
 }
 
 .class-form input,
-.class-form select,
 .class-form button {
-    padding: 12px;
     width: 100%;
+    padding: 14px;
     box-sizing: border-box;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 .class-form button {
-    background: #0b6bcb;
+    background: #1769aa;
     color: white;
     border: none;
     font-weight: bold;
@@ -54,19 +48,18 @@
 
 .class-table th,
 .class-table td {
-    border-bottom: 1px solid #ddd;
     padding: 12px 8px;
+    border-bottom: 1px solid #ddd;
     text-align: left;
 }
 
 .class-table th {
-    background: #f2f5f8;
+    background: #f0f3f7;
 }
 
 .class-table button {
-    padding: 7px 10px;
+    padding: 8px;
     margin: 3px;
-    cursor: pointer;
 }
 
 .class-message {
@@ -80,7 +73,7 @@
     }
 
     .class-card {
-        padding: 14px;
+        padding: 15px;
     }
 
     .class-table th,
@@ -99,9 +92,84 @@
     <p>Smart School Manager</p>
 </header>
 
-<div class="class-container">
+<main class="class-container">
 
-    <div class="class-card">
-        <h2>Create Class</h2>
+    <!-- CREATE CLASS -->
+    <section class="class-card">
+        <h2 id="formTitle">Create Class</h2>
 
-        <form
+        <form id="classForm" class="class-form">
+
+            <input type="hidden" id="classId">
+
+            <label for="className">Class Name</label>
+            <input
+                type="text"
+                id="className"
+                placeholder="e.g. Primary 1"
+                required
+            >
+
+            <label for="classArm">Arm (Optional)</label>
+            <input
+                type="text"
+                id="classArm"
+                placeholder="e.g. A, B, Blue"
+            >
+
+            <button type="submit" id="saveClassButton">
+                Create Class
+            </button>
+
+            <button type="button" id="cancelEditButton" style="display:none;">
+                Cancel Edit
+            </button>
+
+        </form>
+
+        <p id="classMessage" class="class-message"></p>
+    </section>
+
+    <!-- CLASS LIST -->
+    <section class="class-card">
+        <h2>Registered Classes</h2>
+
+        <input
+            type="search"
+            id="classSearch"
+            placeholder="Search classes..."
+            style="width:100%;padding:12px;margin-bottom:15px;box-sizing:border-box;"
+        >
+
+        <div style="overflow-x:auto;">
+            <table class="class-table">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Arm</th>
+                        <th>Students</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="classList">
+                    <tr>
+                        <td colspan="4">Loading classes...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <button type="button" onclick="location.href='admin.html'">
+        Back to Dashboard
+    </button>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="classes.js"></script>
+
+</body>
+</html>
