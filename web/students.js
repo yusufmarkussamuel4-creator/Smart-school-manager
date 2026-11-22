@@ -431,18 +431,26 @@ function displayStudents(students) {
 
         const actions = document.createElement("td");
 
-        const viewButton = document.createElement("button");
-        viewButton.textContent = "View Profile";
-        viewButton.type = "button";
-        viewButton.addEventListener("click", () => openProfile(student.id));
+        const actions = document.createElement("td");
 
-        const editButton = document.createElement("button");
-        editButton.textContent = "Edit";
-        editButton.type = "button";
-        editButton.addEventListener("click", () => openProfile(student.id, true));
+const viewButton = document.createElement("button");
+viewButton.textContent = "View Profile";
+viewButton.type = "button";
+viewButton.addEventListener("click", () => openProfile(student.id));
 
-        actions.append(viewButton, editButton);
-        row.append(admission, name, gender, classCell, actions);
+const editButton = document.createElement("button");
+editButton.textContent = "Edit";
+editButton.type = "button";
+editButton.addEventListener("click", () => openProfile(student.id, true));
+
+const deleteButton = document.createElement("button");
+deleteButton.textContent = "Delete";
+deleteButton.type = "button";
+deleteButton.style.background = "#dc2626";
+deleteButton.addEventListener("click", () => deleteStudent(student.id));
+
+actions.append(viewButton, editButton, deleteButton);
+row.append(admission, name, gender, classCell, actions);
 
         list.appendChild(row);
     });
