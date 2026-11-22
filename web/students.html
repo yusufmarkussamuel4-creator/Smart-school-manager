@@ -3,87 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Student Management | Smart School Manager</title>
 
     <link rel="stylesheet" href="styles.css">
 
     <style>
         body {
-            background: #f3f6fa;
+            margin: 0;
+            background: #f4f6f9;
             font-family: Arial, sans-serif;
-        }
-
-        .container {
-            max-width: 1150px;
-            margin: 25px auto;
-            padding: 15px;
+            color: #263238;
         }
 
         .header {
-            background: #123b65;
+            background: #123b63;
             color: white;
-            padding: 22px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 25px auto;
+            padding: 15px;
         }
 
         .card {
             background: white;
             padding: 22px;
+            margin-bottom: 22px;
             border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+        }
+
+        h2 {
+            color: #123b63;
+            margin-top: 0;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
         }
 
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
         label {
-            display: block;
             font-weight: bold;
             margin-bottom: 6px;
         }
 
         input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
+            padding: 11px;
+            border: 1px solid #ccd3da;
             border-radius: 6px;
-            box-sizing: border-box;
             font-size: 15px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .btn {
-            padding: 11px 17px;
-            border: none;
-            border-radius: 6px;
+        textarea {
+            min-height: 75px;
+        }
+
+        button {
+            background: #123b63;
             color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 6px;
             cursor: pointer;
-            margin: 4px;
+            margin-top: 12px;
         }
 
-        .primary {
-            background: #1769aa;
+        button:hover {
+            opacity: .9;
         }
 
-        .success {
-            background: #16804a;
+        .secondary-btn {
+            background: #64748b;
         }
 
-        .warning {
-            background: #e69500;
+        .message {
+            margin-top: 12px;
+            font-weight: bold;
         }
 
-        .danger {
-            background: #b42318;
-        }
-
-        .secondary {
-            background: #555;
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border: 2px solid #ccd3da;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
         }
 
         .table-wrapper {
@@ -92,8 +109,8 @@
 
         table {
             width: 100%;
-            min-width: 700px;
             border-collapse: collapse;
+            min-width: 600px;
         }
 
         th, td {
@@ -106,48 +123,31 @@
             background: #eaf0f6;
         }
 
-        #studentMessage,
-        #profileMessage {
-            font-weight: bold;
-            margin-top: 12px;
-        }
-
         .modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,.7);
-            z-index: 9999;
+            background: rgba(0,0,0,.6);
+            z-index: 1000;
             overflow-y: auto;
-            padding: 15px;
+            padding: 20px;
         }
 
         .modal-content {
             background: white;
-            max-width: 750px;
-            margin: 25px auto;
+            max-width: 650px;
+            margin: 30px auto;
             padding: 22px;
             border-radius: 10px;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        @media(max-width: 650px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
 
-        @media(max-width:600px) {
             .container {
                 padding: 10px;
-            }
-
-            .card {
-                padding: 15px;
-            }
-
-            .modal-content {
-                padding: 15px;
-                margin: 5px auto;
             }
         }
     </style>
@@ -155,45 +155,42 @@
 
 <body>
 
-<div class="container">
+<header class="header">
+    <h1>SMART SCHOOL MANAGER</h1>
+    <p>Student Management</p>
+</header>
 
-    <div class="header">
-        <h2>SMART SCHOOL MANAGER</h2>
-        <h3>Student Management</h3>
-        <p>Register, manage and view student records.</p>
-    </div>
+<main class="container">
 
-    <!-- REGISTRATION -->
-
-    <div class="card">
-
-        <h3>Register New Student</h3>
+    <!-- STUDENT REGISTRATION -->
+    <section class="card">
+        <h2>Register New Student</h2>
 
         <form id="studentForm">
 
             <div class="form-grid">
 
-                <div>
+                <div class="form-group">
                     <label>Admission Number</label>
                     <input type="text" id="admissionNumber" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>First Name</label>
                     <input type="text" id="firstName" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Middle Name</label>
                     <input type="text" id="middleName">
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Last Name</label>
                     <input type="text" id="lastName" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Gender</label>
                     <select id="gender">
                         <option value="">Select Gender</option>
@@ -202,39 +199,35 @@
                     </select>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Date of Birth</label>
                     <input type="date" id="dateOfBirth">
                 </div>
 
-                <div>
-                    <label>Parent/Guardian Name</label>
+                <div class="form-group">
+                    <label>Guardian Name</label>
                     <input type="text" id="guardianName">
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Guardian Phone</label>
                     <input type="tel" id="guardianPhone">
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Class</label>
                     <select id="classId" required>
-                        <option value="">Loading classes...</option>
+                        <option value="">Select Class</option>
                     </select>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Academic Session</label>
-                    <input
-                        type="text"
-                        id="academicSession"
-                        placeholder="2026/2027"
-                        required
-                    >
+                    <input type="text" id="academicSession"
+                           value="2026/2027" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Term</label>
                     <select id="term" required>
                         <option value="">Select Term</option>
@@ -244,97 +237,69 @@
                     </select>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Home Address</label>
                     <textarea id="homeAddress"></textarea>
                 </div>
 
+                <div class="form-group">
+                    <label>Student Passport Photograph</label>
+                    <input type="file"
+                           id="passportPhoto"
+                           accept="image/jpeg,image/png,image/webp">
+                    <small>Maximum file size: 2 MB. JPG, PNG or WEBP.</small>
+                    <img id="passportPreview"
+                         class="photo-preview"
+                         alt="Passport preview">
+                </div>
+
             </div>
 
-            <br>
+            <button type="submit">Register Student</button>
 
-            <button type="submit" class="btn primary">
-                Register Student
-            </button>
-
-            <p id="studentMessage"></p>
+            <p id="studentMessage" class="message"></p>
 
         </form>
+    </section>
 
-    </div>
 
     <!-- REGISTERED STUDENTS -->
+    <section class="card">
+        <h2>Registered Students</h2>
 
-    <div class="card">
-
-        <h3>Registered Students</h3>
-
-        <input
-            type="search"
-            id="studentSearch"
-            placeholder="Search by name, admission number or class..."
-        >
-
-        <br><br>
+        <input type="search"
+               id="studentSearch"
+               placeholder="Search by name or admission number">
 
         <div class="table-wrapper">
-
             <table>
-
                 <thead>
                     <tr>
                         <th>Admission No.</th>
                         <th>Student Name</th>
-                        <th>Gender</th>
                         <th>Class</th>
-                        <th>Actions</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
                 <tbody id="studentList">
-
                     <tr>
-                        <td colspan="5">Loading students...</td>
+                        <td colspan="4">Loading students...</td>
                     </tr>
-
                 </tbody>
-
             </table>
-
         </div>
+    </section>
 
-    </div>
+</main>
 
-    <button
-        class="btn secondary"
-        onclick="window.location.href='admin.html'"
-    >
-        Back to Dashboard
-    </button>
-
-</div>
 
 <!-- STUDENT PROFILE MODAL -->
-
 <div id="profileModal" class="modal">
 
     <div class="modal-content">
 
-        <div class="modal-header">
-
-            <h3 id="profileTitle">Student Profile</h3>
-
-            <button
-                type="button"
-                class="btn danger"
-                onclick="closeProfile()"
-            >
-                Close
-            </button>
-
-        </div>
-
-        <hr>
+        <h2 id="profileTitle">Student Profile</h2>
 
         <form id="profileForm">
 
@@ -343,27 +308,27 @@
 
             <div class="form-grid">
 
-                <div>
+                <div class="form-group">
                     <label>Admission Number</label>
-                    <input type="text" id="profileAdmission" required>
+                    <input type="text" id="profileAdmission" disabled>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>First Name</label>
                     <input type="text" id="profileFirstName" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Middle Name</label>
                     <input type="text" id="profileMiddleName">
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Last Name</label>
                     <input type="text" id="profileLastName" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Gender</label>
                     <select id="profileGender">
                         <option value="">Select Gender</option>
@@ -372,83 +337,91 @@
                     </select>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Date of Birth</label>
                     <input type="date" id="profileDOB">
                 </div>
 
-                <div>
-                    <label>Parent/Guardian Name</label>
+                <div class="form-group">
+                    <label>Guardian Name</label>
                     <input type="text" id="profileGuardian">
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Guardian Phone</label>
                     <input type="tel" id="profilePhone">
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Class</label>
-                    <select id="profileClass">
+                    <select id="profileClass" required>
+                        <option value="">Select Class</option>
                     </select>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Academic Session</label>
-                    <input type="text" id="profileSession">
+                    <input type="text" id="profileSession" required>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Term</label>
-                    <select id="profileTerm">
+                    <select id="profileTerm" required>
+                        <option value="">Select Term</option>
                         <option value="First Term">First Term</option>
                         <option value="Second Term">Second Term</option>
                         <option value="Third Term">Third Term</option>
                     </select>
                 </div>
 
-                <div>
+                <div class="form-group">
                     <label>Home Address</label>
                     <textarea id="profileAddress"></textarea>
                 </div>
 
+                <div class="form-group">
+                    <label>Change Passport Photograph</label>
+                    <input type="file"
+                           id="profilePassportPhoto"
+                           accept="image/jpeg,image/png,image/webp">
+
+                    <small>Maximum file size: 2 MB. JPG, PNG or WEBP.</small>
+
+                    <img id="profilePassportPreview"
+                         class="photo-preview"
+                         alt="Student passport preview">
+                </div>
+
             </div>
 
-            <p id="profileMessage"></p>
+            <p id="profileMessage" class="message"></p>
 
-            <button
-                type="button"
-                id="editProfileButton"
-                class="btn warning"
-            >
-                Edit Student
+            <button type="button" id="editProfileButton">
+                Edit Profile
             </button>
 
-            <button
-                type="submit"
-                id="saveProfileButton"
-                class="btn primary"
-                style="display:none;"
-            >
+            <button type="submit" id="saveProfileButton" style="display:none">
                 Save Changes
             </button>
 
-            <button
-                type="button"
-                id="cancelEditButton"
-                class="btn secondary"
-                style="display:none;"
-            >
-                Cancel Editing
+            <button type="button"
+                    id="cancelEditButton"
+                    class="secondary-btn"
+                    style="display:none">
+                Cancel
+            </button>
+
+            <button type="button"
+                    class="secondary-btn"
+                    onclick="document.getElementById('profileModal').style.display='none'">
+                Close
             </button>
 
         </form>
 
     </div>
-
 </div>
 
-<!-- SCRIPTS: LOAD AFTER ALL HTML ELEMENTS -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
