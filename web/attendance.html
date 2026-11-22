@@ -1,1 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Management | Smart School Manager</title>
+    <link rel="stylesheet" href="styles.css">
 
+    <style>
+        .attendance-container {
+            max-width: 1100px;
+            margin: 25px auto;
+            padding: 20px;
+        }
+
+        .attendance-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .attendance-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .attendance-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .attendance-form input,
+        .attendance-form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 11px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .attendance-table th {
+            background: #f1f5f9;
+        }
+
+        .attendance-button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #176b45;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .attendance-message {
+            margin-top: 12px;
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="dashboard-header">
+    <h2>SMART SCHOOL MANAGER</h2>
+    <p>Attendance Management</p>
+</header>
+
+<main class="attendance-container">
+
+    <section class="attendance-card">
+        <h3>Record Student Attendance</h3>
+
+        <div class="attendance-form">
+
+            <div>
+                <label for="attendanceClass">Class</label>
+                <select id="attendanceClass">
+                    <option value="">Loading classes...</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="attendanceDate">Attendance Date</label>
+                <input type="date" id="attendanceDate">
+            </div>
+
+            <div>
+                <label for="attendanceSession">Academic Session</label>
+                <input type="text" id="attendanceSession"
+                       value="2026/2027">
+            </div>
+
+            <div>
+                <label for="attendanceTerm">Term</label>
+                <select id="attendanceTerm">
+                    <option value="First Term">First Term</option>
+                    <option value="Second Term">Second Term</option>
+                    <option value="Third Term">Third Term</option>
+                </select>
+            </div>
+
+        </div>
+
+        <button class="attendance-button" id="loadAttendanceButton">
+            Load Students
+        </button>
+
+        <p id="attendanceMessage" class="attendance-message"></p>
+    </section>
+
+    <section class="attendance-card">
+
+        <h3>Student Attendance Register</h3>
+
+        <p id="attendanceSummary">Select a class to begin.</p>
+
+        <div class="table-wrapper">
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Admission No.</th>
+                        <th>Student Name</th>
+                        <th>Gender</th>
+                        <th>Attendance Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="attendanceList">
+                    <tr>
+                        <td colspan="5">No students loaded.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="attendance-button" id="saveAttendanceButton">
+            Save Attendance
+        </button>
+
+    </section>
+
+    <p>
+        <a href="admin.html">Back to Admin Dashboard</a>
+    </p>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="attendance.js"></script>
+
+</body>
+</html>
