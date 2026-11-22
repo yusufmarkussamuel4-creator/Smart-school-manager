@@ -733,4 +733,69 @@ async function logoutStudentManagement() {
 // START
 // ==========================================
 
-initializeStudents();
+initializeStudents();// ==========================================
+// DELETE STUDENT
+// ==========================================
+
+async function deleteStudent(studentId) {
+    const student = registeredStudents.find(
+        item => item.id === studentId
+    );
+
+    if (!student) {
+        alert("Student record not found.");
+        return;
+    }
+
+    const studentName = [
+        student.first_name,
+        student.middle_name,
+        student.last_name
+    ].filter(Boolean).join(" ");
+
+    const confirmed = confirm(
+        `Are you sure you want to delete ${studentName}?\n\n` +
+        "This action will permanently remove the student record, " +
+        "enrolment records and passport photograph."
+    );
+
+    if (!confirmed) return;
+
+    try {
+        // Remove passport photograph first
+        if (student.passport_url) {
+            const { error: photoError } = await db.storage
+                .from(PASSPORT_BUCKET)
+                .remove([student.passport_url]);
+
+            if (photoError) throw photoError;
+        }
+
+        // Delete enrolment records
+        const { error: enrollmentError } = await db
+            .from("student_enrollments")
+            .delete()
+            .eq("student_id", studentId)
+            .eq("school_id", currentSchoolId);
+
+        if (enrollmentError) throw enrollmentError;
+
+        // Delete student record
+        const { error: studentError } = await db
+            .from("students")
+            .delete()
+            .eq("id", studentId)
+            .eq("school_id", currentSchoolId);
+
+        if (studentError) throw studentError;
+
+        alert("Student deleted successfully.");
+
+        await loadStudents();
+
+    } catch (error) {
+        console.error("Student deletion error:", error);
+
+        alert("Unable to delete student: " + error.message);
+    }
+}
