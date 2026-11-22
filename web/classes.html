@@ -1,1 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Management | Smart School Manager</title>
 
+<link rel="stylesheet" href="styles.css">
+
+<style>
+.class-container {
+    max-width: 1000px;
+    margin: 25px auto;
+    padding: 20px;
+}
+
+.class-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.class-card h2 {
+    margin-top: 0;
+}
+
+.class-form {
+    display: grid;
+    gap: 12px;
+}
+
+.class-form input,
+.class-form select,
+.class-form button {
+    padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 6px;
+}
+
+.class-form button {
+    background: #0b6bcb;
+    color: white;
+    border: none;
+    font-weight: bold;
+}
+
+.class-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.class-table th,
+.class-table td {
+    border-bottom: 1px solid #ddd;
+    padding: 12px 8px;
+    text-align: left;
+}
+
+.class-table th {
+    background: #f2f5f8;
+}
+
+.class-table button {
+    padding: 7px 10px;
+    margin: 3px;
+    cursor: pointer;
+}
+
+.class-message {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+@media(max-width:600px) {
+    .class-container {
+        padding: 10px;
+    }
+
+    .class-card {
+        padding: 14px;
+    }
+
+    .class-table th,
+    .class-table td {
+        font-size: 13px;
+        padding: 8px 5px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="dashboard-header">
+    <h1>Class Management</h1>
+    <p>Smart School Manager</p>
+</header>
+
+<div class="class-container">
+
+    <div class="class-card">
+        <h2>Create Class</h2>
+
+        <form
