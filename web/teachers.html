@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Teacher Management | Smart School Manager</title>
+
     <link rel="stylesheet" href="styles.css">
 
     <style>
@@ -16,14 +18,15 @@
         .teacher-card {
             background: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,.08);
         }
 
         .teacher-form {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns:
+                repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
 
@@ -37,20 +40,25 @@
         .teacher-form select,
         .teacher-form textarea {
             width: 100%;
-            padding: 10px;
+            padding: 11px;
             border: 1px solid #ccc;
             border-radius: 6px;
             box-sizing: border-box;
         }
 
         .teacher-button {
-            padding: 10px 16px;
+            padding: 11px 18px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             background: #176b45;
             color: white;
-            margin: 8px 5px 0 0;
+            margin: 10px 5px 0 0;
+        }
+
+        .teacher-button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
         }
 
         .secondary-button {
@@ -61,6 +69,15 @@
             background: #b7791f;
         }
 
+        .teacher-search {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+
         .teacher-table {
             width: 100%;
             border-collapse: collapse;
@@ -69,7 +86,7 @@
 
         .teacher-table th,
         .teacher-table td {
-            padding: 11px;
+            padding: 12px;
             border: 1px solid #ddd;
             text-align: left;
         }
@@ -84,16 +101,28 @@
 
         .teacher-message {
             margin-top: 12px;
+            padding: 10px;
+            border-radius: 6px;
             font-weight: bold;
         }
 
-        .teacher-search {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            margin-top: 10px;
+        .teacher-message:empty {
+            display: none;
+        }
+
+        .teacher-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .teacher-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .teacher-info {
+            background: #e0f2fe;
+            color: #075985;
         }
     </style>
 </head>
@@ -108,9 +137,10 @@
 <main class="teacher-container">
 
     <section class="teacher-card">
-        <h3>Register Teacher</h3>
 
-        <form id="teacherForm">
+        <h3 id="formTitle">Register Teacher</h3>
+
+        <form id="teacherForm" onsubmit="return false;">
 
             <input type="hidden" id="teacherId">
 
@@ -158,7 +188,7 @@
                 <div>
                     <label for="qualification">Qualification</label>
                     <input type="text" id="qualification"
-                           placeholder="e.g. B.Ed, B.Sc, NCE">
+                           placeholder="B.Ed, B.Sc, NCE">
                 </div>
 
                 <div>
@@ -168,43 +198,59 @@
 
                 <div>
                     <label for="homeAddress">Home Address</label>
-                    <textarea id="homeAddress" rows="2"></textarea>
+                    <textarea id="homeAddress" rows="3"></textarea>
                 </div>
 
             </div>
 
-            <button type="submit" class="teacher-button"
+            <button type="submit"
+                    class="teacher-button"
                     id="saveTeacherButton">
+
                 Register Teacher
+
             </button>
 
             <button type="button"
                     class="teacher-button secondary-button"
-                    id="cancelEditButton" hidden>
+                    id="cancelEditButton"
+                    hidden>
+
                 Cancel Edit
+
             </button>
 
         </form>
 
-        <p id="teacherMessage" class="teacher-message"></p>
+        <div id="teacherMessage"
+             class="teacher-message"
+             role="status"
+             aria-live="polite"></div>
+
     </section>
 
     <section class="teacher-card">
 
         <h3>Registered Teachers</h3>
 
-        <input type="search" id="teacherSearch"
-               class="teacher-search"
-               placeholder="Search by name or staff number">
+        <input
+            type="search"
+            id="teacherSearch"
+            class="teacher-search"
+            placeholder="Search by name, staff number or phone">
 
-        <button type="button" class="teacher-button"
+        <button type="button"
+                class="teacher-button"
                 id="showArchivedButton">
+
             View Archived Teachers
+
         </button>
 
         <div class="table-wrapper">
 
             <table class="teacher-table">
+
                 <thead>
                     <tr>
                         <th>S/N</th>
@@ -218,10 +264,13 @@
                 </thead>
 
                 <tbody id="teacherList">
+
                     <tr>
-                        <td colspan="7">Loading teachers...</td>
+                        <td colspan="7">Connecting to database...</td>
                     </tr>
+
                 </tbody>
+
             </table>
 
         </div>
@@ -237,8 +286,10 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="teachers.js"></script>
+
+<script src="config.js?v=3"></script>
+
+<script src="teachers.js?v=3"></script>
 
 </body>
 </html>
