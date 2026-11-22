@@ -7,11 +7,101 @@ const db = window.supabase.createClient(
     window.SUPABASE_CONFIG.KEY
 );
 
+const PASSPORT_BUCKET = "student-passports";
+const MAX_PHOTO_SIZE = 2 * 1024 * 1024;
+const ALLOWED_TYPES = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+];
+
 let currentSchoolId = null;
 let registeredStudents = [];
 let schoolClasses = [];
 let selectedStudent = null;
 let editingProfile = false;
+
+// ==========================================
+// PHOTO HELPERS
+// ==========================================
+
+function validatePhoto(file) {
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+        throw new Error("Use JPG, PNG or WEBP images only.");
+    }
+
+    if (file.size > MAX_PHOTO_SIZE) {
+        throw new Error("Passport photograph must not exceed 2 MB.");
+    }
+}
+
+function previewPhoto(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+
+    input.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (!file) {
+            preview.removeAttribute("src");
+            preview.style.display = "none";
+            return;
+        }
+
+        try {
+            validatePhoto(file);
+
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+        } catch (error) {
+            alert(error.message);
+            this.value = "";
+            preview.removeAttribute("src");
+            preview.style.display = "none";
+        }
+    });
+}
+
+async function uploadPassport(file, studentId) {
+    validatePhoto(file);
+
+    const extension = file.type === "image/png"
+        ? "png"
+        : file.type === "image/webp"
+            ? "webp"
+            : "jpg";
+
+    const filePath =
+        `${currentSchoolId}/${studentId}.${extension}`;
+
+    const { error } = await db.storage
+        .from(PASSPORT_BUCKET)
+        .upload(filePath, file, {
+            upsert: true,
+            contentType: file.type
+        });
+
+    if (error) throw error;
+
+    return filePath;
+}
+
+async function getPassportUrl(filePath) {
+    if (!filePath) return null;
+
+    const { data, error } = await db.storage
+        .from(PASSPORT_BUCKET)
+        .createSignedUrl(filePath, 3600);
+
+    if (error) {
+        console.error("Passport URL error:", error);
+        return null;
+    }
+
+    return data.signedUrl;
+}
 
 // ==========================================
 // INITIALIZE
@@ -81,30 +171,29 @@ async function loadClasses() {
 
     schoolClasses = data || [];
 
-    const select = document.getElementById("classId");
+    const selects = [
+        document.getElementById("classId"),
+        document.getElementById("profileClass")
+    ];
 
-    select.innerHTML = '<option value="">Select Class</option>';
+    selects.forEach(select => {
+        select.innerHTML = '<option value="">Select Class</option>';
 
-    schoolClasses.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item.id;
-        option.textContent =
-            item.class_name + (item.arm ? " - " + item.arm : "");
-        select.appendChild(option);
-    });
-
-    const profileSelect = document.getElementById("profileClass");
-
-    profileSelect.innerHTML = '<option value="">Select Class</option>';
-
-    schoolClasses.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item.id;
-        option.textContent =
-            item.class_name + (item.arm ? " - " + item.arm : "");
-        profileSelect.appendChild(option);
+        schoolClasses.forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent =
+                item.class_name + (item.arm ? " - " + item.arm : "");
+            select.appendChild(option);
+        });
     });
 }
+
+// ==========================================
+// REGISTRATION PHOTO PREVIEW
+// ==========================================
+
+previewPhoto("passportPhoto", "passportPreview");
 
 // ==========================================
 // REGISTER STUDENT
@@ -120,6 +209,8 @@ document.getElementById("studentForm").addEventListener(
 
         button.disabled = true;
         button.textContent = "Registering...";
+
+        let createdStudentId = null;
 
         try {
             const student = {
@@ -138,6 +229,7 @@ document.getElementById("studentForm").addEventListener(
             const classId = document.getElementById("classId").value;
             const session = document.getElementById("academicSession").value.trim();
             const term = document.getElementById("term").value;
+            const photo = document.getElementById("passportPhoto").files[0];
 
             if (!student.admission_number || !student.first_name || !student.last_name) {
                 throw new Error("Complete the required student information.");
@@ -147,6 +239,8 @@ document.getElementById("studentForm").addEventListener(
                 throw new Error("Select the class, academic session and term.");
             }
 
+            if (photo) validatePhoto(photo);
+
             const { data: newStudent, error: studentError } = await db
                 .from("students")
                 .insert(student)
@@ -155,32 +249,74 @@ document.getElementById("studentForm").addEventListener(
 
             if (studentError) throw studentError;
 
+            createdStudentId = newStudent.id;
+
+            // Upload passport if selected
+            if (photo) {
+                const photoPath = await uploadPassport(
+                    photo,
+                    createdStudentId
+                );
+
+                const { error: photoError } = await db
+                    .from("students")
+                    .update({ passport_url: photoPath })
+                    .eq("id", createdStudentId)
+                    .eq("school_id", currentSchoolId);
+
+                if (photoError) throw photoError;
+            }
+
             const { error: enrollmentError } = await db
                 .from("student_enrollments")
                 .insert({
                     school_id: currentSchoolId,
-                    student_id: newStudent.id,
+                    student_id: createdStudentId,
                     class_id: classId,
                     academic_session: session,
                     term: term
                 });
 
-            if (enrollmentError) {
-                throw new Error(
-                    "Student saved, but enrolment failed: " +
-                    enrollmentError.message
-                );
-            }
+            if (enrollmentError) throw enrollmentError;
 
             message.textContent = "Student registered successfully!";
             message.style.color = "green";
 
             this.reset();
+
+            document.getElementById("passportPreview").style.display = "none";
+
             await loadStudents();
 
         } catch (error) {
+            console.error(error);
+
             message.textContent = error.message;
             message.style.color = "red";
+
+            // Clean up an incomplete registration
+            if (createdStudentId) {
+                await db.storage
+                    .from(PASSPORT_BUCKET)
+                    .remove([
+                        `${currentSchoolId}/${createdStudentId}.jpg`,
+                        `${currentSchoolId}/${createdStudentId}.png`,
+                        `${currentSchoolId}/${createdStudentId}.webp`
+                    ]);
+
+                await db
+                    .from("student_enrollments")
+                    .delete()
+                    .eq("student_id", createdStudentId)
+                    .eq("school_id", currentSchoolId);
+
+                await db
+                    .from("students")
+                    .delete()
+                    .eq("id", createdStudentId)
+                    .eq("school_id", currentSchoolId);
+            }
+
         } finally {
             button.disabled = false;
             button.textContent = "Register Student";
@@ -227,29 +363,33 @@ async function loadStudents() {
         schoolClasses.forEach(item => {
             classMap.set(
                 item.id,
-            item.class_name + (item.arm ? " - " + item.arm : "")
+                item.class_name + (item.arm ? " - " + item.arm : "")
             );
         });
 
-        registeredStudents = students.map(student => {
-            const enrollment = enrollmentMap.get(student.id);
+        registeredStudents = await Promise.all(
+            students.map(async student => {
+                const enrollment = enrollmentMap.get(student.id);
 
-            return {
-                ...student,
-                enrollmentId: enrollment ? enrollment.id : null,
-                classId: enrollment ? enrollment.class_id : "",
-                className: enrollment
-                    ? classMap.get(enrollment.class_id) || "Class not found"
-                    : "Not assigned",
-                academicSession: enrollment ? enrollment.academic_session : "",
-                term: enrollment ? enrollment.term : ""
-            };
-        });
+                return {
+                    ...student,
+                    passportSignedUrl: await getPassportUrl(student.passport_url),
+                    enrollmentId: enrollment ? enrollment.id : null,
+                    classId: enrollment ? enrollment.class_id : "",
+                    className: enrollment
+                        ? classMap.get(enrollment.class_id) || "Class not found"
+                        : "Not assigned",
+                    academicSession: enrollment ? enrollment.academic_session : "",
+                    term: enrollment ? enrollment.term : ""
+                };
+            })
+        );
 
         displayStudents(registeredStudents);
 
     } catch (error) {
         console.error(error);
+
         list.innerHTML =
             `<tr><td colspan="5">Unable to load students: ${error.message}</td></tr>`;
     }
@@ -261,6 +401,7 @@ async function loadStudents() {
 
 function displayStudents(students) {
     const list = document.getElementById("studentList");
+
     list.innerHTML = "";
 
     if (!students.length) {
@@ -292,19 +433,17 @@ function displayStudents(students) {
 
         const viewButton = document.createElement("button");
         viewButton.textContent = "View Profile";
-        viewButton.className = "student-btn view-btn";
         viewButton.type = "button";
         viewButton.addEventListener("click", () => openProfile(student.id));
 
         const editButton = document.createElement("button");
         editButton.textContent = "Edit";
-        editButton.className = "student-btn edit-btn";
         editButton.type = "button";
         editButton.addEventListener("click", () => openProfile(student.id, true));
 
         actions.append(viewButton, editButton);
-
         row.append(admission, name, gender, classCell, actions);
+
         list.appendChild(row);
     });
 }
@@ -319,7 +458,6 @@ function openProfile(studentId, editMode = false) {
     if (!student) return;
 
     selectedStudent = student;
-    editingProfile = false;
 
     document.getElementById("profileStudentId").value = student.id;
     document.getElementById("profileEnrollmentId").value =
@@ -340,10 +478,28 @@ function openProfile(studentId, editMode = false) {
 
     document.getElementById("profileMessage").textContent = "";
 
+    document.getElementById("profilePassportPhoto").value = "";
+
+    const preview = document.getElementById("profilePassportPreview");
+
+    if (student.passportSignedUrl) {
+        preview.src = student.passportSignedUrl;
+        preview.style.display = "block";
+    } else {
+        preview.removeAttribute("src");
+        preview.style.display = "none";
+    }
+
     document.getElementById("profileModal").style.display = "block";
 
     setProfileMode(editMode);
 }
+
+// ==========================================
+// PROFILE PHOTO PREVIEW
+// ==========================================
+
+previewPhoto("profilePassportPhoto", "profilePassportPreview");
 
 // ==========================================
 // VIEW OR EDIT MODE
@@ -417,7 +573,6 @@ document.getElementById("profileForm").addEventListener(
             const studentId = document.getElementById("profileStudentId").value;
 
             const updatedStudent = {
-                admission_number: document.getElementById("profileAdmission").value.trim(),
                 first_name: document.getElementById("profileFirstName").value.trim(),
                 middle_name: document.getElementById("profileMiddleName").value.trim() || null,
                 last_name: document.getElementById("profileLastName").value.trim(),
@@ -428,12 +583,31 @@ document.getElementById("profileForm").addEventListener(
                 home_address: document.getElementById("profileAddress").value.trim() || null
             };
 
-            if (
-                !updatedStudent.admission_number ||
-                !updatedStudent.first_name ||
-                !updatedStudent.last_name
-            ) {
-                throw new Error("Admission number, first name and last name are required.");
+            const classId = document.getElementById("profileClass").value;
+            const session = document.getElementById("profileSession").value.trim();
+            const term = document.getElementById("profileTerm").value;
+
+            const photo = document.getElementById("profilePassportPhoto").files[0];
+
+            if (!updatedStudent.first_name || !updatedStudent.last_name) {
+                throw new Error("First name and last name are required.");
+            }
+
+            if (!classId || !session || !term) {
+                throw new Error("Select the class, academic session and term.");
+            }
+
+            if (photo) validatePhoto(photo);
+
+            // Upload new passport if selected
+            let newPhotoPath = selectedStudent.passport_url;
+
+            if (photo) {
+                newPhotoPath = await uploadPassport(photo, studentId);
+            }
+
+            if (photo) {
+                updatedStudent.passport_url = newPhotoPath;
             }
 
             const { error: updateError } = await db
@@ -444,15 +618,8 @@ document.getElementById("profileForm").addEventListener(
 
             if (updateError) throw updateError;
 
-            const enrollmentId = document.getElementById("profileEnrollmentId").value;
-
-            const classId = document.getElementById("profileClass").value;
-            const session = document.getElementById("profileSession").value.trim();
-            const term = document.getElementById("profileTerm").value;
-
-            if (!classId || !session || !term) {
-                throw new Error("Select the class, academic session and term.");
-            }
+            const enrollmentId =
+                document.getElementById("profileEnrollmentId").value;
 
             const enrollmentData = {
                 school_id: currentSchoolId,
@@ -489,15 +656,19 @@ document.getElementById("profileForm").addEventListener(
             if (updated) {
                 selectedStudent = updated;
                 openProfile(studentId, false);
+
                 document.getElementById("profileMessage").textContent =
                     "Changes saved successfully!";
+
                 document.getElementById("profileMessage").style.color = "green";
             }
 
         } catch (error) {
             console.error(error);
+
             message.textContent = error.message;
             message.style.color = "red";
+
         } finally {
             button.disabled = false;
             button.textContent = "Save Changes";
