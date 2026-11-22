@@ -1,1 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subject Management | Smart School Manager</title>
 
+<link rel="stylesheet" href="styles.css">
+
+<style>
+.subject-container {
+    max-width: 1100px;
+    margin: 25px auto;
+    padding: 15px;
+}
+
+.subject-card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.subject-card h2 {
+    margin-top: 0;
+}
+
+.subject-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 15px;
+}
+
+.subject-form input,
+.subject-form select,
+.subject-container input,
+.subject-container select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.subject-container button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 3px;
+}
+
+.primary-btn {
+    background: #145da0;
+    color: white;
+}
+
+.secondary-btn {
+    background: #555;
+    color: white;
+}
+
+.danger-btn {
+    background: #c62828;
+    color: white;
+}
+
+.success-btn {
+    background: #16834a;
+    color: white;
+}
+
+.subject-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    min-width: 650px;
+}
+
+.subject-table th,
+.subject-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.subject-table th {
+    background: #145da0;
+    color: white;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+#subjectMessage {
+    padding: 12px;
+    margin: 12px 0;
+    border-radius: 6px;
+    display: none;
+}
+
+.subject-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+    gap: 12px;
+}
+
+.stat-box {
+    background: #eaf3fc;
+    padding: 18px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-box h3 {
+    margin: 5px 0;
+    color: #145da0;
+}
+
+@media(max-width:600px) {
+    .subject-container {
+        padding: 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="subject-container">
+
+    <h1>Subject Management</h1>
+    <p>Manage school subjects and assign them to classes.</p>
+
+    <div id="subjectMessage" role="status" aria-live="polite"></div>
+
+    <div class="subject-card">
+        <h2>Subject Statistics</h2>
+
+        <div class="subject-stats">
+            <div class="stat-box">
+                <h3 id="totalSubjects">0</h3>
+                <p>Total Subjects</p>
+            </div>
+
+            <div class="stat-box">
+                <h3 id="totalAssignments">0</h3>
+                <p>Class Assignments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="subject-card">
+        <h2 id="formTitle">Register New Subject</h2>
+
+        <form id="subjectForm" onsubmit="return false;">
+
+            <div class="subject-form">
+
+                <div>
+                    <label>Subject Name *</label>
+                    <input
+                        type="text"
+                        id="subjectName"
+                        placeholder="e.g. Mathematics"
+                        required>
+                </div>
+
+                <div>
+                    <label>Subject Code</label>
+                    <input
+                        type="text"
+                        id="subjectCode"
+                        placeholder="e.g. MTH101">
+                </div>
+
+            </div>
+
+            <br>
+
+            <button type="submit" class="primary-btn" id="saveSubjectBtn">
+                Register Subject
+            </button>
+
+            <button type="button" class="secondary-btn"
+                id="cancelEditBtn" style="display:none;">
+                Cancel Edit
+            </button>
+
+        </form>
+    </div>
+
+    <div class="subject-card">
+        <h2>Assign Subject to Class</h2>
+
+        <div class="subject-form">
+
+            <div>
+                <label>Select Class</label>
+                <select id="assignmentClass">
+                    <option value="">Loading classes...</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Select Subject</label>
+                <select id="assignmentSubject">
+                    <option value="">Select subject</option>
+                </select>
+            </div>
+
+        </div>
+
+        <br>
+
+        <button type="button" class="success-btn" id="assignSubjectBtn">
+            Assign Subject
+        </button>
+    </div>
+
+    <div class="subject-card">
+        <h2>Registered Subjects</h2>
+
+        <input
+            type="search"
+            id="subjectSearch"
+            placeholder="Search subjects...">
+
+        <div class="table-wrapper">
+
+            <table class="subject-table">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Subject Name</th>
+                        <th>Subject Code</th>
+                        <th>Assignments</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="subjectList">
+                    <tr>
+                        <td colspan="5">Loading subjects...</td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+    <div class="subject-card">
+        <h2>Class Subject Assignments</h2>
+
+        <div class="table-wrapper">
+
+            <table class="subject-table">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Class</th>
+                        <th>Subject</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="assignmentList">
+                    <tr>
+                        <td colspan="4">Loading assignments...</td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=1"></script>
+<script src="subjects.js?v=1"></script>
+
+</body>
+</html>
