@@ -268,7 +268,33 @@ button {
         <p><strong>Subjects:</strong> <span id="subjectCount">0</span></p>
         <p><strong>Overall Grade:</strong> <span id="overallGrade"></span></p>
     </div>
+<div class="attendance-summary">
+    <h3>ATTENDANCE SUMMARY</h3>
 
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Total Records</th>
+                <th>Present</th>
+                <th>Absent</th>
+                <th>Late</th>
+                <th>Excused</th>
+                <th>Attendance Rate</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td id="attendanceTotal">0</td>
+                <td id="attendancePresent">0</td>
+                <td id="attendanceAbsent">0</td>
+                <td id="attendanceLate">0</td>
+                <td id="attendanceExcused">0</td>
+                <td id="attendanceRate">0%</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
     <div class="comment-box">
         <h3>Class Teacher's Comment</h3>
         <p id="teacherComment">________________________________________</p>
