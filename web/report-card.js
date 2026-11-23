@@ -831,26 +831,38 @@ async function generateReport() {
                 : "No Results"
         );
 
-        // STUDENT PASSPORT
+        // STUDENT PASSPORT - PRIVATE STORAGE SIGNED URL
 
-        const passport =
-            document.getElementById("studentPassport");
+const passport = document.getElementById("studentPassport");
 
-        if (passport) {
+if (passport) {
+    passport.onload = null;
+    passport.onerror = null;
+    passport.removeAttribute("src");
+    passport.style.display = "none";
 
-            if (student.passport_url) {
+    if (student.passport_url) {
+        const { data: photoData, error: photoError } =
+            await db.storage
+                .from("student-passports")
+                .createSignedUrl(student.passport_url, 3600);
 
-                passport.src = student.passport_url;
+        if (photoError) {
+            console.error("Passport retrieval error:", photoError);
+        } else if (photoData?.signedUrl) {
+            passport.onload = () => {
                 passport.style.display = "block";
+            };
 
-            } else {
-
-                passport.removeAttribute("src");
+            passport.onerror = () => {
+                console.error("Report card passport failed to load.");
                 passport.style.display = "none";
+            };
 
-            }
-
+            passport.src = photoData.signedUrl;
         }
+    }
+}
 
         // LOAD ATTENDANCE
 
