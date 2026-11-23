@@ -68,8 +68,9 @@ async function initialize() {
 
         schoolId = membership.school_id;
 
-        await loadSchool();
-        await loadClasses();
+setText("schoolName", "UBE PRIMARY SCHOOL UNGWAN LAFIYA");
+
+await loadClasses();
 
     } catch (error) {
         console.error(error);
