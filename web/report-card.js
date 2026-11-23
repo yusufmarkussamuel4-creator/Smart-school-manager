@@ -329,7 +329,39 @@ async function generateReport() {
             "overallGrade",
             subjectCount > 0 ? getGrade(average) : "No Results"
         );
+// LOAD STUDENT ATTENDANCE SUMMARY
+const { data: attendance, error: attendanceError } = await db
+    .from("attendance")
+    .select("status")
+    .eq("school_id", schoolId)
+    .eq("student_id", studentId)
+    .eq("class_id", classId)
+    .eq("academic_session", session)
+    .eq("term", term);
 
+if (attendanceError) {
+    console.error("Attendance error:", attendanceError);
+} else {
+    const records = attendance || [];
+
+    const present = records.filter(r => r.status === "Present").length;
+    const absent = records.filter(r => r.status === "Absent").length;
+    const late = records.filter(r => r.status === "Late").length;
+    const excused = records.filter(r => r.status === "Excused").length;
+
+    const total = records.length;
+
+    const attendanceRate = total > 0
+        ? ((present + late) / total * 100).toFixed(1)
+        : 0;
+
+    setText("attendanceTotal", total);
+    setText("attendancePresent", present);
+    setText("attendanceAbsent", absent);
+    setText("attendanceLate", late);
+    setText("attendanceExcused", excused);
+    setText("attendanceRate", attendanceRate + "%");
+}
         const passport = document.getElementById("studentPassport");
 
         if (passport) {
