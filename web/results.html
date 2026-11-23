@@ -1,1 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic Results | Smart School Manager</title>
 
+<link rel="stylesheet" href="styles.css">
+
+<style>
+.results-container {
+    max-width: 1200px;
+    margin: 25px auto;
+    padding: 15px;
+}
+
+.results-card {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.results-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+    gap: 15px;
+}
+
+.results-container input,
+.results-container select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.results-container button {
+    padding: 10px 15px;
+    margin: 3px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.results-container button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.primary-btn {
+    background: #145da0;
+    color: white;
+}
+
+.success-btn {
+    background: #16834a;
+    color: white;
+}
+
+.secondary-btn {
+    background: #555;
+    color: white;
+}
+
+#resultsMessage {
+    padding: 12px;
+    border-radius: 6px;
+    margin: 12px 0;
+    display: none;
+}
+
+.results-table-wrapper {
+    overflow-x: auto;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+    margin-top: 15px;
+}
+
+.results-table th,
+.results-table td {
+    border: 1px solid #ddd;
+    padding: 11px;
+    text-align: left;
+}
+
+.results-table th {
+    background: #145da0;
+    color: white;
+}
+
+.score-input {
+    max-width: 100px;
+}
+
+.results-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+    gap: 12px;
+}
+
+.summary-box {
+    background: #eaf3fc;
+    padding: 15px;
+    text-align: center;
+    border-radius: 8px;
+}
+
+.summary-box h3 {
+    color: #145da0;
+    margin: 5px 0;
+}
+
+@media(max-width:600px) {
+    .results-container {
+        padding: 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="results-container">
+
+    <h1>Academic Results Management</h1>
+    <p>Record and manage students' academic scores.</p>
+
+    <div id="resultsMessage" role="status" aria-live="polite"></div>
+
+    <div class="results-card">
+        <h2>Result Settings</h2>
+
+        <div class="results-filters">
+
+            <div>
+                <label>Class</label>
+                <select id="classSelect">
+                    <option value="">Loading classes...</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Subject</label>
+                <select id="subjectSelect">
+                    <option value="">Select subject</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Academic Session</label>
+                <select id="sessionSelect">
+                    <option value="">Select session</option>
+                    <option>2025/2026</option>
+                    <option>2026/2027</option>
+                    <option>2027/2028</option>
+                    <option>2028/2029</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Term</label>
+                <select id="termSelect">
+                    <option value="">Select term</option>
+                    <option>First Term</option>
+                    <option>Second Term</option>
+                    <option>Third Term</option>
+                </select>
+            </div>
+
+        </div>
+
+        <br>
+
+        <button id="loadStudentsBtn" class="primary-btn" type="button">
+            Load Students
+        </button>
+    </div>
+
+    <div class="results-card">
+        <h2>Score Summary</h2>
+
+        <div class="results-summary">
+            <div class="summary-box">
+                <h3 id="studentCount">0</h3>
+                <p>Students</p>
+            </div>
+
+            <div class="summary-box">
+                <h3 id="enteredCount">0</h3>
+                <p>Scores Entered</p>
+            </div>
+
+            <div class="summary-box">
+                <h3 id="classAverage">0</h3>
+                <p>Class Average</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="results-card">
+        <h2>Student Scores</h2>
+
+        <p>
+            Continuous Assessment: <strong>40 marks</strong> |
+            Examination: <strong>60 marks</strong> |
+            Total: <strong>100 marks</strong>
+        </p>
+
+        <div class="results-table-wrapper">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Admission No.</th>
+                        <th>Student Name</th>
+                        <th>CA (40)</th>
+                        <th>Exam (60)</th>
+                        <th>Total (100)</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+
+                <tbody id="resultsList">
+                    <tr>
+                        <td colspan="7">Select class, subject, session and term, then load students.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <br>
+
+        <button type="button" id="saveResultsBtn" class="success-btn" disabled>
+            Save Results
+        </button>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=1"></script>
+<script src="results.js?v=1"></script>
+
+</body>
+</html>
