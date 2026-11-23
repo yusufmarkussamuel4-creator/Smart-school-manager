@@ -773,30 +773,33 @@ async function generateReport() {
 
         let grandTotal = 0;
 
-        (results || []).forEach(result => {
+        (results || []).forEach((result, index) => {
 
-            const subject = subjectMap[result.subject_id];
+    const subject = subjectMap[result.subject_id];
 
-            if (!subject) return;
+    if (!subject) return;
 
-            const ca = Number(result.ca_score || 0);
-            const exam = Number(result.exam_score || 0);
-            const total = Number(result.total_score || 0);
+    const ca = Number(result.ca_score || 0);
+    const exam = Number(result.exam_score || 0);
+    const total = Number(result.total_score || 0);
 
-            grandTotal += total;
+    grandTotal += total;
 
-            const row = document.createElement("tr");
+    const row = document.createElement("tr");
 
-            addCell(row, subject.subject_name);
-            addCell(row, subject.subject_code || "-");
-            addCell(row, ca);
-            addCell(row, exam);
-            addCell(row, total);
-            addCell(row, getGrade(total));
+    const gradeParts = getGrade(total).split(" - ");
 
-            table.appendChild(row);
+    addCell(row, index + 1);
+    addCell(row, subject.subject_name);
+    addCell(row, ca);
+    addCell(row, exam);
+    addCell(row, total);
+    addCell(row, gradeParts[0]);
+    addCell(row, gradeParts[1] || "");
 
-        });
+    table.appendChild(row);
+
+});
 
         // STUDENT PERFORMANCE
 
