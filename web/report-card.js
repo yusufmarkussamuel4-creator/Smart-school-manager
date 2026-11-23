@@ -863,7 +863,6 @@ if (passport) {
         }
     }
 }
-
         // LOAD ATTENDANCE
 
         const attendanceRate = await loadAttendance(
