@@ -1,1 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Student Report Card | Smart School Manager</title>
+
+<link rel="stylesheet" href="styles.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js?v=1"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: #f1f5f3;
+    color: #222;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.page-title {
+    text-align: center;
+    color: #176b43;
+    margin-bottom: 20px;
+}
+
+.control-panel {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: white;
+}
+
+button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.primary-btn {
+    background: #176b43;
+    color: white;
+}
+
+.print-btn {
+    background: #173b2c;
+    color: white;
+}
+
+#reportMessage {
+    margin-top: 12px;
+    font-weight: bold;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+#reportSheet {
+    display: none;
+    background: white;
+    padding: 25px;
+    max-width: 850px;
+    margin: 20px auto;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+
+.school-header {
+    text-align: center;
+    border-bottom: 3px solid #176b43;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+}
+
+.logo-container {
+    margin-bottom: 8px;
+}
+
+#schoolLogo {
+    max-width: 90px;
+    max-height: 90px;
+    object-fit: contain;
+}
+
+.school-header h2 {
+    margin: 5px 0;
+    color: #176b43;
+    font-size: 23px;
+    text-transform: uppercase;
+}
+
+.school-motto {
+    font-style: italic;
+    margin: 5px 0;
+}
+
+.head-teacher-name {
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.school-contact {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.report-heading {
+    text-align: center;
+    margin: 15px 0;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.report-session {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.student-section {
+    display: grid;
+    grid-template-columns: 1fr 110px;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.student-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+    font-size: 13px;
+}
+
+.detail-item {
+    border-bottom: 1px solid #ddd;
+    padding: 5px 0;
+}
+
+#studentPassport {
+    width: 100px;
+    height: 115px;
+    object-fit: cover;
+    border: 1px solid #777;
+    padding: 3px;
+}
+
+.section-title {
+    background: #176b43;
+    color: white;
+    padding: 7px;
+    margin: 15px 0 8px;
+    font-size: 14px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    font-size: 12px;
+}
+
+th, td {
+    border: 1px solid #777;
+    padding: 7px;
+    text-align: center;
+}
+
+th {
+    background: #eaf3ed;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.summary-box {
+    border: 1px solid #aaa;
+    padding: 9px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.summary-box strong {
+    display: block;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+.comments {
+    border: 1px solid #aaa;
+    padding: 10px;
+    margin-bottom: 10px;
+    min-height: 55px;
+    font-size: 13px;
+}
+
+.comment-label {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.signature-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    margin-top: 35px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.signature-line {
+    border-top: 1px solid #333;
+    padding-top: 7px;
+    margin-top: 35px;
+}
+
+.stamp-area {
+    border: 1px dashed #888;
+    height: 75px;
+    width: 90px;
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+}
+
+.report-footer {
+    border-top: 2px solid #176b43;
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 8px;
+    font-size: 11px;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #reportSheet {
+        padding: 12px;
+        overflow-x: auto;
+    }
+
+    .student-details {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    table {
+        font-size: 10px;
+    }
+
+    th, td {
+        padding: 5px;
+    }
+}
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 10mm;
+    }
+
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        max-width: none;
+        margin: 0;
+    }
+
+    .page-title,
+    .control-panel {
+        display: none !important;
+    }
+
+    #reportSheet {
+        display: block !important;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    button {
+        display: none !important;
+    }
+
+    table {
+        page-break-inside: avoid;
+    }
+
+    .school-header,
+    .student-section,
+    .signature-area {
+        page-break-inside: avoid;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 class="page-title">Student Report Card</h1>
+
+<div class="control-panel">
+
+    <div class="form-grid">
+
+        <div class="form-group">
+            <label for="classSelect">Select Class</label>
+            <select id="classSelect">
+                <option value="">Select Class</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="studentSelect">Select Student</label>
+            <select id="studentSelect">
+                <option value="">Select Student</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="sessionSelect">Academic Session</label>
+            <select id="sessionSelect">
+                <option value="">Select Session</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="termSelect">Academic Term</label>
+            <select id="termSelect">
+                <option value="">Select Term</option>
+                <option value="First Term">First Term</option>
+                <option value="Second Term">Second Term</option>
+                <option value="Third Term">Third Term</option>
+            </select>
+        </div>
+
+    </div>
+
+    <div class="actions">
+        <button id="generateBtn" class="primary-btn">
+            Generate Report Card
+        </button>
+
+        <button id="printBtn" class="print-btn">
+            Print Report Card
+        </button>
+    </div>
+
+    <div id="reportMessage"></div>
+
+</div>
+
+
+<!-- REPORT CARD -->
+
+<div id="reportSheet">
+
+    <div class="school-header">
+
+        <div class="logo-container">
+            <img id="schoolLogo" src="" alt="School Logo"
+                 style="display:none;">
+        </div>
+
+        <h2 id="schoolName"></h2>
+
+        <p id="schoolMotto" class="school-motto"></p>
+
+        <p id="headTeacherName" class="head-teacher-name"></p>
+
+        <div class="school-contact">
+            <div id="schoolAddress"></div>
+            <div id="schoolPhone"></div>
+            <div id="schoolEmail"></div>
+        </div>
+
+    </div>
+
+
+    <div class="report-heading">
+        STUDENT ACADEMIC REPORT CARD
+    </div>
+
+    <div class="report-session">
+        <span id="reportSession"></span>
+    </div>
+
+
+    <!-- STUDENT INFORMATION -->
+
+    <div class="section-title">STUDENT INFORMATION</div>
+
+    <div class="student-section">
+
+        <div class="student-details">
+
+            <div class="detail-item">
+                <strong>Student Name:</strong>
+                <span id="studentName"></span>
+            </div>
+
+            <div class="detail-item">
+                <strong>Admission Number:</strong>
+                <span id="admissionNumber"></span>
+            </div>
+
+            <div class="detail-item">
+                <strong>Class:</strong>
+                <span id="studentClass"></span>
+            </div>
+
+            <div class="detail-item">
+                <strong>Academic Session:</strong>
+                <span id="academicSession"></span>
+            </div>
+
+            <div class="detail-item">
+                <strong>Academic Term:</strong>
+                <span id="academicTerm"></span>
+            </div>
+
+        </div>
+
+        <div>
+            <img id="studentPassport" src=""
+                 alt="Student Passport"
+                 style="display:none;">
+        </div>
+
+    </div>
+
+
+    <!-- ACADEMIC RESULTS -->
+
+    <div class="section-title">ACADEMIC PERFORMANCE</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>S/N</th>
+                <th>Subject</th>
+                <th>CA</th>
+                <th>Exam</th>
+                <th>Total</th>
+                <th>Grade</th>
+                <th>Remark</th>
+            </tr>
+        </thead>
+
+        <tbody id="reportResults">
+        </tbody>
+    </table>
+
+
+    <!-- PERFORMANCE SUMMARY -->
+
+    <div class="section-title">RESULT SUMMARY</div>
+
+    <div class="summary-grid">
+
+        <div class="summary-box">
+            Total Score
+            <strong id="totalScore">0</strong>
+        </div>
+
+        <div class="summary-box">
+            Average Score
+            <strong id="averageScore">0</strong>
+        </div>
+
+        <div class="summary-box">
+            Number of Subjects
+            <strong id="subjectCount">0</strong>
+        </div>
+
+        <div class="summary-box">
+            Overall Grade
+            <strong id="overallGrade">-</strong>
+        </div>
+
+        <div class="summary-box">
+            Class Position
+            <strong id="classPosition">-</strong>
+        </div>
+
+        <div class="summary-box">
+            Class Size
+            <strong id="classSize">0</strong>
+        </div>
+
+    </div>
+
+
+    <!-- ATTENDANCE -->
+
+    <div class="section-title">ATTENDANCE RECORD</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Total School Days</th>
+                <th>Present</th>
+                <th>Absent</th>
+                <th>Late</th>
+                <th>Excused</th>
+                <th>Attendance Rate</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td id="attendanceTotal">0</td>
+                <td id="attendancePresent">0</td>
+                <td id="attendanceAbsent">0</td>
+                <td id="attendanceLate">0</td>
+                <td id="attendanceExcused">0</td>
+                <td id="attendanceRate">0%</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <!-- CLASS PERFORMANCE -->
+
+    <div class="section-title">CLASS PERFORMANCE</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Student Average</th>
+                <th>Class Average</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td id="studentAverage">0</td>
+                <td id="classAverage">0</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <!-- COMMENTS -->
+
+    <div class="section-title">TEACHER'S COMMENT</div>
+
+    <div class="comments">
+        <div class="comment-label">Class Teacher:</div>
+        <div id="teacherComment"></div>
+    </div>
+
+    <div class="section-title">HEAD TEACHER'S COMMENT</div>
+
+    <div class="comments">
+        <div class="comment-label">Head Teacher / Principal:</div>
+        <div id="headComment"></div>
+    </div>
+
+
+    <!-- SIGNATURES AND STAMP -->
+
+    <div class="signature-area">
+
+        <div>
+            <div class="signature-line">
+                Class Teacher's Signature
+            </div>
+        </div>
+
+        <div>
+            <div class="stamp-area">
+                OFFICIAL STAMP
+            </div>
+            School Stamp
+        </div>
+
+        <div>
+            <div class="signature-line">
+                Head Teacher's Signature
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="report-footer">
+
+        <strong id="footerSchoolName"></strong>
+
+        <div id="footerSchoolAddress"></div>
+
+        <div id="footerSchoolPhone"></div>
+
+        <p>
+            This report card is an official academic record of the school.
+        </p>
+
+    </div>
+
+</div>
+
+</div>
+
+<script src="report-card.js?v=7"></script>
+
+</body>
+</html>
